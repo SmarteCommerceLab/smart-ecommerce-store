@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,6 +42,8 @@ No. Premium purchases and future entitlement checks are handled by Freemius.
 
 == Changelog ==
 
+= 0.1.1 =
+* Add the active repository catalog public key.
+
 = 0.1.0 =
 * Initial public catalog, WordPress.org installation and Freemius checkout flow.
-

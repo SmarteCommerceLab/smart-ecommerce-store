@@ -109,6 +109,7 @@ final class SES_Catalog {
 
 	private static function public_keys() {
 		return array(
+			'repository-2026-07' => "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA8KxJLP4jTfnxEqLpqksu\n9TrbeJVioM+t9Ug2lowZiotvJqkTxIjtYzlJvRDe5sJAQs/prZIubjvI5+wUE5/f\nIaUSxuZLi1z0CY4oaBL/HFFJCyavgLpDTqBvSAk0tXjVlV/SW0C8Rd8ltlZgSvDA\nI0ZcjV4JUCTygjlHYMOhus0bQDja1QvY9UhnJBsA/N9j1eC4w5jFkwCjb4Do/Ocq\nEnBBEzfh48enG+U6U1faW76QwKUt22Si7PmxGO+LCRtFnEce05Bq4YbmqqDjtB5s\nOvDA/xWUBtmGhswgpgX21/H0yMAsdSMf/bvCpjRfDP3v0XIrcUvHUPIdXoS2slhz\nYQdQYuCNGNSNOh1MBjnmIARsAuu4oyxyvUPg/AjMIGXcvZRhoAb54WJ6VsbVfN5Y\nihW86SO+37WA1x+hgPWVAGIeszdSgLJQHD8/ZNWbV6KOJFcjLfGLq8Ech8H/VHWy\nI6pWCiEpy5vmWSL2EtuJzmP+TUzjDpFKRH8egfCoyNxbAgMBAAE=\n-----END PUBLIC KEY-----",
 			'repository-2026-01' => "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAqg61GTtjVKmA6WXuE/HN\n7JDsjoa7RzzV9y0OIO2QMq2LZ4FcUZkqPHfRYpjdPlpys4D/vMjTpI16yU9w/ayZ\npr+aHfL5nT8NDTRsugQq2WqPgGRBd/ltlkEA1y+uEXYj6lKPpf6OrnbHIp0PZdfn\nWdPBiX6HDjoZ44VEgxkoTMmYm4poM/5GE0aAr29uxCu1aAiIKtZ0k04jv1zdeU2C\nenPWBihLgBpPPYb93BAHzy3WBRykessDohp//Xib2G+Usws75B6rwFdni0O94W1A\nfUK9eQ9lQoz+K0nf1vnZnPHfYrQxHoEkOI0EoelogPaYRmtOV+cjjIS53imqn90r\nFCODSGUyJuy7Mf32cl9Cuqpg7Kg4BF9/G02jdPujM9hOgorKL/S8svaRkVamEG/m\nNL+rDnZdafcvyxDVvNb5gda9Ydb1hIA2+I53FZzhYC53RSwFVwCE+q40/6KRtGkP\nfnJTgvrPDh46/jIjqOK/WN+3RF8tj+5mSONLHtHpqx4zAgMBAAE=\n-----END PUBLIC KEY-----",
 		);
 	}
@@ -132,4 +133,3 @@ final class SES_Catalog {
 		return new WP_Error('ses_' . sanitize_key($code), $message);
 	}
 }
-

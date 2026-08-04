@@ -5,6 +5,7 @@ $files = array(
 	$root . '/includes/class-ses-audit.php',
 	$root . '/includes/class-ses-catalog.php',
 	$root . '/includes/class-ses-products.php',
+	$root . '/includes/class-ses-licenses.php',
 	$root . '/includes/class-ses-installer.php',
 	$root . '/includes/class-ses-admin.php',
 );
@@ -18,6 +19,7 @@ foreach ($files as $file) {
 
 $catalog = file_get_contents($root . '/includes/class-ses-catalog.php');
 $installer = file_get_contents($root . '/includes/class-ses-installer.php');
+$licenses = file_get_contents($root . '/includes/class-ses-licenses.php');
 $admin = file_get_contents($root . '/includes/class-ses-admin.php');
 $main = file_get_contents($root . '/smart-ecommerce-store.php');
 $assertions = array(
@@ -48,10 +50,20 @@ foreach (array(
 	"'stream' => true" => 'streamed premium download',
 	"'sslverify' => true" => 'TLS verification',
 	"'license_key' => \$license_key" => 'license authorization payload',
+	'x-smart-entitlement' => 'opaque entitlement receipt',
 ) as $needle => $label) {
 	if (false === strpos($installer, $needle) && false === strpos(file_get_contents($root . '/smart-ecommerce-store.php'), $needle)) {
 		fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1);
 	}
+}
+
+foreach (array(
+	'SES_PREMIUM_STATUS_URL' => 'protected license status endpoint',
+	'checkout.freemius.com' => 'trusted renewal host',
+	'customers.freemius.com' => 'trusted customer portal host',
+	'15 * MINUTE_IN_SECONDS' => 'bounded license status cache',
+) as $needle => $label) {
+	if (false === strpos($licenses . $main, $needle)) { fwrite(STDERR, "Missing license assertion: {$label}\n"); exit(1); }
 }
 
 echo "Smart eCommerce Store checks passed.\n";

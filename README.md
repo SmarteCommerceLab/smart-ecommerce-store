@@ -8,6 +8,7 @@ The Store consumes the signed repository catalog but accepts only entries with a
 
 - Free installation through WordPress.org.
 - Premium purchase through Freemius checkout.
+- Premium license verification and authorized installation through the Smart eCommerce server proxy.
 - Clear installed and active states.
 - No internal catalog, development tools or repository administration.
 
@@ -15,4 +16,3 @@ The Store consumes the signed repository catalog but accepts only entries with a
 
 - Product: https://smartecommerce.it/smart-ecommerce-store/
 - Email: adv@smartecommerce.it
-

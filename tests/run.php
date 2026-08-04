@@ -17,6 +17,7 @@ foreach ($files as $file) {
 }
 
 $catalog = file_get_contents($root . '/includes/class-ses-catalog.php');
+$installer = file_get_contents($root . '/includes/class-ses-installer.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
@@ -28,5 +29,15 @@ foreach ($assertions as $needle => $label) {
 	if (false === strpos($catalog, $needle)) { fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1); }
 }
 
-echo "Smart eCommerce Store checks passed.\n";
+foreach (array(
+	'SES_PREMIUM_INSTALL_URL' => 'server-side premium endpoint',
+	"'stream' => true" => 'streamed premium download',
+	"'sslverify' => true" => 'TLS verification',
+	"'license_key' => \$license_key" => 'license authorization payload',
+) as $needle => $label) {
+	if (false === strpos($installer, $needle) && false === strpos(file_get_contents($root . '/smart-ecommerce-store.php'), $needle)) {
+		fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1);
+	}
+}
 
+echo "Smart eCommerce Store checks passed.\n";

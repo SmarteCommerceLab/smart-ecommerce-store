@@ -70,7 +70,12 @@ final class SES_Admin {
 			<div class="ses-meta"><span><?php echo esc_html(sprintf(__('Versione %s', 'smart-ecommerce-store'), $product['version'] ?: '—')); ?></span><span><?php echo 'freemius' === $product['channel'] ? esc_html__('Premium', 'smart-ecommerce-store') : esc_html__('Free', 'smart-ecommerce-store'); ?></span></div>
 			<div class="ses-actions">
 				<?php if ('freemius' === $product['channel']) : ?>
-					<a class="button button-primary" href="<?php echo esc_url($product['checkout_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Acquista Premium', 'smart-ecommerce-store'); ?></a>
+					<?php if (!$product['installed']) : ?>
+						<?php self::premium_form($product); ?>
+						<a class="button" href="<?php echo esc_url($product['checkout_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Acquista Premium', 'smart-ecommerce-store'); ?></a>
+					<?php elseif (!$product['active']) : ?>
+						<?php self::action_form($product, 'activate', __('Attiva', 'smart-ecommerce-store')); ?>
+					<?php endif; ?>
 				<?php elseif (!$product['installed']) : ?>
 					<?php self::action_form($product, 'install', __('Installa', 'smart-ecommerce-store')); ?>
 				<?php elseif (!$product['active']) : ?>
@@ -79,6 +84,21 @@ final class SES_Admin {
 				<?php if ($product['homepage']) : ?><a class="button" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>
 			</div>
 		</article>
+		<?php
+	}
+
+	private static function premium_form(array $product) {
+		$field_id = 'ses-license-' . sanitize_html_class($product['slug']);
+		?>
+		<form class="ses-premium-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+			<input type="hidden" name="action" value="ses_product_action">
+			<input type="hidden" name="product_action" value="premium_install">
+			<input type="hidden" name="slug" value="<?php echo esc_attr($product['slug']); ?>">
+			<?php wp_nonce_field('ses_product_' . $product['slug']); ?>
+			<label for="<?php echo esc_attr($field_id); ?>"><?php esc_html_e('Chiave licenza Freemius', 'smart-ecommerce-store'); ?></label>
+			<div><input id="<?php echo esc_attr($field_id); ?>" name="license_key" type="password" required minlength="20" autocomplete="off"><button class="button button-primary" type="submit"><?php esc_html_e('Verifica e installa', 'smart-ecommerce-store'); ?></button></div>
+			<p class="description"><?php esc_html_e('La chiave e l’indirizzo del sito vengono inviati a Freemius tramite Smart eCommerce per autorizzare il download. La chiave non viene salvata dallo Store.', 'smart-ecommerce-store'); ?></p>
+		</form>
 		<?php
 	}
 
@@ -101,4 +121,3 @@ final class SES_Admin {
 		printf('<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>', 'success' === $status ? 'success' : 'error', esc_html($message));
 	}
 }
-

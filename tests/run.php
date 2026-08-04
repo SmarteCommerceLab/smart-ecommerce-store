@@ -18,6 +18,8 @@ foreach ($files as $file) {
 
 $catalog = file_get_contents($root . '/includes/class-ses-catalog.php');
 $installer = file_get_contents($root . '/includes/class-ses-installer.php');
+$admin = file_get_contents($root . '/includes/class-ses-admin.php');
+$main = file_get_contents($root . '/smart-ecommerce-store.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
@@ -27,6 +29,18 @@ $assertions = array(
 );
 foreach ($assertions as $needle => $label) {
 	if (false === strpos($catalog, $needle)) { fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1); }
+}
+
+foreach (array(
+	'SES_PRODUCT_NAME' => 'product identity constants',
+	'function get_subpages' => 'subpage registry',
+	'add_submenu_page' => 'registered subpages',
+	'function template' => 'shared page template',
+	'smart-admin-shell' => 'design system shell',
+	'smart-admin-notices' => 'captured WordPress notices',
+	'current_user_can' => 'page capability check',
+) as $needle => $label) {
+	if (false === strpos($admin . $main, $needle)) { fwrite(STDERR, "Missing UI contract: {$label}\n"); exit(1); }
 }
 
 foreach (array(

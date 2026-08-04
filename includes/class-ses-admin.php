@@ -55,6 +55,7 @@ final class SES_Admin {
 		if (false === strpos((string) $hook, 'smart-ecommerce-store') && false === strpos((string) $hook, 'ses-')) { return; }
 		wp_enqueue_style('dashicons');
 		wp_enqueue_style('ses-admin', SES_URL . 'assets/admin.css', array('dashicons'), SES_VERSION);
+		wp_enqueue_style('ses-licenses', SES_URL . 'assets/licenses.css', array('ses-admin'), SES_VERSION);
 	}
 
 	public static function render_dashboard() {
@@ -151,7 +152,7 @@ final class SES_Admin {
 		$status = $product['active'] ? __('Attivo', 'smart-ecommerce-store') : ($product['installed'] ? __('Installato', 'smart-ecommerce-store') : __('Disponibile', 'smart-ecommerce-store'));
 		?>
 		<article class="ses-product-row">
-			<div class="ses-product-main"><?php if ($product['icon_url']) : ?><img src="<?php echo esc_url($product['icon_url']); ?>" alt="" width="56" height="56"><?php else : ?><span class="dashicons dashicons-admin-plugins"></span><?php endif; ?><div><div class="ses-product-title"><h3><?php echo esc_html($product['name']); ?></h3><span class="ses-badge"><?php echo esc_html($status); ?></span><span class="ses-edition"><?php echo 'freemius' === $product['channel'] ? esc_html__('Premium', 'smart-ecommerce-store') : esc_html__('Free', 'smart-ecommerce-store'); ?></span></div><p><?php echo wp_kses_post($product['description']); ?></p><small><?php echo esc_html(sprintf(__('Versione %s', 'smart-ecommerce-store'), $product['version'] ?: '—')); ?></small></div></div>
+			<div class="ses-product-main"><?php if ($product['icon_url']) : ?><img src="<?php echo esc_url($product['icon_url']); ?>" alt="" width="56" height="56"><?php else : ?><span class="dashicons dashicons-admin-plugins"></span><?php endif; ?><div><div class="ses-product-title"><h3><?php echo esc_html($product['name']); ?></h3><span class="ses-badge"><?php echo esc_html($status); ?></span><span class="ses-edition"><?php echo 'freemius' === $product['channel'] ? esc_html__('Premium', 'smart-ecommerce-store') : esc_html__('Free', 'smart-ecommerce-store'); ?></span></div><p><?php echo wp_kses_post($product['description']); ?></p><small><?php echo esc_html(sprintf(__('Versione %s', 'smart-ecommerce-store'), $product['version'] ?: '—')); ?></small><?php if ('freemius' === $product['channel'] && $product['installed']) { self::license_panel($product); } ?></div></div>
 			<div class="ses-product-actions">
 				<?php if ('freemius' === $product['channel'] && !$product['installed']) : self::premium_form($product); ?><a class="button" href="<?php echo esc_url($product['checkout_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Acquista Premium', 'smart-ecommerce-store'); ?></a>
 				<?php elseif (!$product['installed']) : self::action_form($product, 'install', __('Installa Free', 'smart-ecommerce-store')); ?>
@@ -160,6 +161,24 @@ final class SES_Admin {
 				<?php if ($product['homepage']) : ?><a class="button button-link" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>
 			</div>
 		</article>
+		<?php
+	}
+
+	private static function license_panel(array $product) {
+		$license = SES_Licenses::status($product['slug']);
+		if (is_wp_error($license)) {
+			echo '<div class="ses-license ses-license-help"><strong>' . esc_html__('Licenza Premium', 'smart-ecommerce-store') . '</strong><span>' . esc_html($license->get_error_message()) . '</span></div>';
+			return;
+		}
+		$active = 'active' === $license['status'];
+		$expiration = $license['expiration'] ? strtotime($license['expiration']) : false;
+		?>
+		<div class="ses-license">
+			<div><span><?php esc_html_e('Licenza', 'smart-ecommerce-store'); ?></span><strong class="<?php echo $active ? 'is-ok' : 'is-alert'; ?>"><?php echo $active ? esc_html__('Attiva', 'smart-ecommerce-store') : esc_html__('Scaduta o non attiva', 'smart-ecommerce-store'); ?></strong></div>
+			<div><span><?php esc_html_e('Scadenza', 'smart-ecommerce-store'); ?></span><strong><?php echo $expiration ? esc_html(wp_date(get_option('date_format'), $expiration)) : esc_html__('Non indicata', 'smart-ecommerce-store'); ?></strong></div>
+			<div><span><?php esc_html_e('Sito autorizzato', 'smart-ecommerce-store'); ?></span><strong><?php echo esc_html($license['site_url']); ?></strong></div>
+			<div class="ses-license-actions"><?php if ($license['renew_url']) : ?><a href="<?php echo esc_url($license['renew_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Rinnova', 'smart-ecommerce-store'); ?></a><?php endif; ?><?php if ($license['portal_url']) : ?><a href="<?php echo esc_url($license['portal_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Portale cliente', 'smart-ecommerce-store'); ?></a><?php endif; ?></div>
+		</div>
 		<?php
 	}
 

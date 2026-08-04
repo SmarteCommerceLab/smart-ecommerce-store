@@ -87,6 +87,7 @@ final class SES_Installer {
 		if (is_wp_error($response)) { @unlink($tmp); return $response; }
 		$status = (int) wp_remote_retrieve_response_code($response);
 		$type = strtolower((string) wp_remote_retrieve_header($response, 'content-type'));
+		$entitlement = (string) wp_remote_retrieve_header($response, 'x-smart-entitlement');
 		if (200 !== $status || false === strpos($type, 'zip')) {
 			$data = json_decode((string) file_get_contents($tmp), true);
 			@unlink($tmp);
@@ -100,6 +101,9 @@ final class SES_Installer {
 		$result = $upgrader->install($tmp);
 		@unlink($tmp);
 		wp_clean_plugins_cache(true);
+		if (true === $result && $entitlement) {
+			SES_Licenses::store_entitlement($product['slug'], $entitlement);
+		}
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_premium_install_failed', __('Installazione Premium non completata.', 'smart-ecommerce-store')));
 	}
 

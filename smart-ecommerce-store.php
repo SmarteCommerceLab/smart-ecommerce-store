@@ -21,6 +21,10 @@ define('SES_DIR', plugin_dir_path(__FILE__));
 define('SES_URL', plugin_dir_url(__FILE__));
 define('SES_CATALOG_URL', 'https://repository.smartecommerce.it/updates/index.json');
 define('SES_PREMIUM_INSTALL_URL', 'https://repository.smartecommerce.it/api/v1/premium-packages/install');
+define('SES_PRODUCT_NAME', 'Smart eCommerce Store');
+define('SES_PRODUCT_VERSION', SES_VERSION);
+define('SES_PRODUCT_TEXT_DOMAIN', 'smart-ecommerce-store');
+define('SES_PRODUCT_DIR_URL', SES_URL);
 
 require_once SES_DIR . 'includes/class-ses-audit.php';
 require_once SES_DIR . 'includes/class-ses-catalog.php';

@@ -6,10 +6,27 @@ final class SES_Updater {
 	const CACHE_TTL = 6 * HOUR_IN_SECONDS;
 
 	public static function register() {
+		add_filter('update_plugins_repository.smartecommerce.it', array(__CLASS__, 'repository_update'), 10, 4);
 		add_filter('pre_set_site_transient_update_plugins', array(__CLASS__, 'updates'));
 		add_filter('site_transient_update_plugins', array(__CLASS__, 'updates'));
 		add_filter('plugins_api', array(__CLASS__, 'information'), 10, 3);
 		add_filter('upgrader_pre_download', array(__CLASS__, 'verify_download'), 10, 4);
+	}
+
+	public static function repository_update($update, $plugin_data, $plugin_file, $locales) {
+		if (plugin_basename(SES_FILE) !== plugin_basename($plugin_file)) { return $update; }
+		$release = self::release();
+		if (!$release || !version_compare($release['version'], SES_VERSION, '>')) { return $update; }
+		return array(
+			'id' => SES_UPDATE_URL,
+			'slug' => 'smart-ecommerce-store',
+			'version' => $release['version'],
+			'url' => $release['homepage'],
+			'package' => $release['package'],
+			'requires' => $release['requires'],
+			'requires_php' => $release['requires_php'],
+			'autoupdate' => false,
+		);
 	}
 
 	private static function release() {

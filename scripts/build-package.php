@@ -1,6 +1,6 @@
 <?php
 $root = dirname(__DIR__);
-$version = '0.2.7';
+$version = '0.2.8';
 $slug = 'smart-ecommerce-store';
 $dist = $root . '/dist';
 $stage = $dist . '/' . $slug;

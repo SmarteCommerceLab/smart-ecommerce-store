@@ -83,6 +83,8 @@ foreach (array(
 	'admin_post_ses_check_updates' => 'manual update check',
 	'function clear_update_caches' => 'update cache invalidation',
 	'15 * MINUTE_IN_SECONDS' => 'bounded update cache',
+	'unset($transient->response[$key])' => 'stale update removal',
+	'$transient->no_update[$key]' => 'current version state',
 ) as $needle => $label) {
 	if (false === strpos($updater, $needle)) { fwrite(STDERR, "Missing updater assertion: {$label}\n"); exit(1); }
 }

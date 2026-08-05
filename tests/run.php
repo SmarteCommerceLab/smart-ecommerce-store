@@ -46,6 +46,8 @@ foreach (array(
 	'current_user_can' => 'page capability check',
 	'const MENU_POSITION = 82' => 'final administration menu placement',
 	'ses-details-button' => 'consistent details button styling',
+	'notice_buffer_level' => 'owned notice buffer tracking',
+	'function is_plugin_screen' => 'Store-only notice capture',
 ) as $needle => $label) {
 	if (false === strpos($admin . $main, $needle)) { fwrite(STDERR, "Missing UI contract: {$label}\n"); exit(1); }
 }

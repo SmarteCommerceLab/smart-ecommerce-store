@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) { exit; }
 
 final class SES_Updater {
 	const CACHE_KEY = 'ses_repository_release_v2';
-	const CACHE_TTL = 6 * HOUR_IN_SECONDS;
+	const CACHE_TTL = 15 * MINUTE_IN_SECONDS;
 
 	public static function register() {
 		add_filter('update_plugins_repository.smartecommerce.it', array(__CLASS__, 'repository_update'), 10, 4);
@@ -11,6 +11,68 @@ final class SES_Updater {
 		add_filter('site_transient_update_plugins', array(__CLASS__, 'updates'));
 		add_filter('plugins_api', array(__CLASS__, 'information'), 10, 3);
 		add_filter('upgrader_pre_download', array(__CLASS__, 'verify_download'), 10, 4);
+		add_filter('plugin_action_links_' . plugin_basename(SES_FILE), array(__CLASS__, 'action_links'));
+		add_filter('plugin_row_meta', array(__CLASS__, 'row_meta'), 10, 2);
+		add_action('admin_post_ses_check_updates', array(__CLASS__, 'manual_check'));
+		add_action('admin_notices', array(__CLASS__, 'manual_check_notice'));
+		add_action('upgrader_process_complete', array(__CLASS__, 'upgrader_complete'), 10, 2);
+	}
+
+	public static function action_links($links) {
+		$dashboard = '<a href="' . esc_url(admin_url('admin.php?page=smart-ecommerce-store')) . '">' . esc_html__('Dashboard', 'smart-ecommerce-store') . '</a>';
+		$documentation = '<a href="' . esc_url(SES_PRODUCT_URL) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Documentazione', 'smart-ecommerce-store') . '</a>';
+		$links = array_merge(array('ses_dashboard' => $dashboard, 'ses_documentation' => $documentation), $links);
+		if (current_user_can('update_plugins')) {
+			$url = wp_nonce_url(admin_url('admin-post.php?action=ses_check_updates'), 'ses_check_updates');
+			$links['ses_check_updates'] = '<a href="' . esc_url($url) . '">' . esc_html__('Controlla aggiornamenti', 'smart-ecommerce-store') . '</a>';
+		}
+		return $links;
+	}
+
+	public static function row_meta($links, $file) {
+		if (plugin_basename(SES_FILE) !== $file) { return $links; }
+		$external = ' target="_blank" rel="noopener noreferrer"';
+		$links[] = '<a href="' . esc_url(SES_PRODUCT_URL) . '"' . $external . '>' . esc_html__('Pagina del prodotto', 'smart-ecommerce-store') . '</a>';
+		$links[] = '<a href="' . esc_url(SES_SUPPORT_URL) . '"' . $external . '>' . esc_html__('Supporto', 'smart-ecommerce-store') . '</a>';
+		return $links;
+	}
+
+	public static function manual_check() {
+		if (!current_user_can('update_plugins')) {
+			wp_die(esc_html__('Non hai i permessi per controllare gli aggiornamenti.', 'smart-ecommerce-store'), 403);
+		}
+		check_admin_referer('ses_check_updates');
+		self::clear_update_caches();
+		wp_update_plugins();
+		$updates = get_site_transient('update_plugins');
+		$available = is_object($updates) && !empty($updates->response[plugin_basename(SES_FILE)]);
+		$url = add_query_arg(array('ses_update_checked' => '1', 'ses_update_available' => $available ? '1' : '0'), self_admin_url('plugins.php'));
+		wp_safe_redirect($url);
+		exit;
+	}
+
+	public static function manual_check_notice() {
+		if ('1' !== sanitize_key((string) wp_unslash($_GET['ses_update_checked'] ?? '')) || !current_user_can('update_plugins')) { return; }
+		$available = '1' === sanitize_key((string) wp_unslash($_GET['ses_update_available'] ?? ''));
+		$message = $available
+			? __('È disponibile un aggiornamento verificato di Smart eCommerce Store.', 'smart-ecommerce-store')
+			: __('Smart eCommerce Store è aggiornato all’ultima versione disponibile.', 'smart-ecommerce-store');
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($message) . '</p></div>';
+	}
+
+	public static function upgrader_complete($upgrader, $options) {
+		if ('update' !== ($options['action'] ?? '') || 'plugin' !== ($options['type'] ?? '')) { return; }
+		$plugins = (array) ($options['plugins'] ?? array());
+		if (!empty($options['plugin'])) { $plugins[] = $options['plugin']; }
+		if (!in_array(plugin_basename(SES_FILE), array_map('plugin_basename', $plugins), true)) { return; }
+		self::clear_update_caches();
+	}
+
+	public static function clear_update_caches() {
+		delete_site_transient(self::CACHE_KEY);
+		delete_site_transient('ses_repository_release_v1');
+		delete_site_transient('update_plugins');
+		wp_clean_plugins_cache(true);
 	}
 
 	public static function repository_update($update, $plugin_data, $plugin_file, $locales) {

@@ -79,6 +79,10 @@ foreach (array(
 	'update_package_verified' => 'verified update audit',
 	"hash_file('sha256'" => 'SHA-256 package verification',
 	'repository.smartecommerce.it' => 'trusted repository host',
+	'plugin_action_links_' => 'plugin action links',
+	'admin_post_ses_check_updates' => 'manual update check',
+	'function clear_update_caches' => 'update cache invalidation',
+	'15 * MINUTE_IN_SECONDS' => 'bounded update cache',
 ) as $needle => $label) {
 	if (false === strpos($updater, $needle)) { fwrite(STDERR, "Missing updater assertion: {$label}\n"); exit(1); }
 }

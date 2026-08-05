@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class SES_Updater {
-	const CACHE_KEY = 'ses_repository_release_v1';
+	const CACHE_KEY = 'ses_repository_release_v2';
 	const CACHE_TTL = 6 * HOUR_IN_SECONDS;
 
 	public static function register() {

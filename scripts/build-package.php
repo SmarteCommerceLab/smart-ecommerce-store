@@ -1,6 +1,6 @@
 <?php
 $root = dirname(__DIR__);
-$version = '0.2.1';
+$version = '0.2.2';
 $slug = 'smart-ecommerce-store';
 $dist = $root . '/dist';
 $stage = $dist . '/' . $slug;
@@ -46,6 +46,7 @@ $required = array(
 	$slug . '/includes/class-ses-admin.php',
 	$slug . '/includes/class-ses-catalog.php',
 	$slug . '/includes/class-ses-licenses.php',
+	$slug . '/includes/class-ses-updater.php',
 );
 $check = new ZipArchive();
 $check->open($zipPath);

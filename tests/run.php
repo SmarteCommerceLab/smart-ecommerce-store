@@ -7,6 +7,7 @@ $files = array(
 	$root . '/includes/class-ses-products.php',
 	$root . '/includes/class-ses-licenses.php',
 	$root . '/includes/class-ses-installer.php',
+	$root . '/includes/class-ses-updater.php',
 	$root . '/includes/class-ses-admin.php',
 );
 
@@ -22,6 +23,7 @@ $installer = file_get_contents($root . '/includes/class-ses-installer.php');
 $licenses = file_get_contents($root . '/includes/class-ses-licenses.php');
 $admin = file_get_contents($root . '/includes/class-ses-admin.php');
 $main = file_get_contents($root . '/smart-ecommerce-store.php');
+$updater = file_get_contents($root . '/includes/class-ses-updater.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
@@ -64,6 +66,16 @@ foreach (array(
 	'15 * MINUTE_IN_SECONDS' => 'bounded license status cache',
 ) as $needle => $label) {
 	if (false === strpos($licenses . $main, $needle)) { fwrite(STDERR, "Missing license assertion: {$label}\n"); exit(1); }
+}
+
+foreach (array(
+	'pre_set_site_transient_update_plugins' => 'native WordPress update discovery',
+	'upgrader_pre_download' => 'package verification hook',
+	'update_package_verified' => 'verified update audit',
+	"hash_file('sha256'" => 'SHA-256 package verification',
+	'repository.smartecommerce.it' => 'trusted repository host',
+) as $needle => $label) {
+	if (false === strpos($updater, $needle)) { fwrite(STDERR, "Missing updater assertion: {$label}\n"); exit(1); }
 }
 
 echo "Smart eCommerce Store checks passed.\n";

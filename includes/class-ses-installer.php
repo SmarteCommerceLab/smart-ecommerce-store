@@ -69,14 +69,10 @@ final class SES_Installer {
 			update_option('ses_site_uid', $uid, false);
 		}
 
-		$tmp = wp_tempnam($product['slug'] . '.zip');
-		if (!$tmp) { return new WP_Error('ses_temp_failed', __('Impossibile preparare il download Premium.', 'smart-ecommerce-store')); }
 		$response = wp_remote_post(SES_PREMIUM_INSTALL_URL, array(
-			'timeout' => 180,
+			'timeout' => 30,
 			'sslverify' => true,
-			'stream' => true,
-			'filename' => $tmp,
-			'headers' => array('Accept' => 'application/zip', 'Content-Type' => 'application/json'),
+			'headers' => array('Accept' => 'application/json', 'Content-Type' => 'application/json'),
 			'body' => wp_json_encode(array(
 				'product_slug' => $product['slug'],
 				'license_key' => $license_key,
@@ -84,15 +80,33 @@ final class SES_Installer {
 				'site_uid' => $uid,
 			)),
 		));
-		if (is_wp_error($response)) { @unlink($tmp); return $response; }
+		if (is_wp_error($response)) { return $response; }
 		$status = (int) wp_remote_retrieve_response_code($response);
-		$type = strtolower((string) wp_remote_retrieve_header($response, 'content-type'));
-		$entitlement = (string) wp_remote_retrieve_header($response, 'x-smart-entitlement');
-		if (200 !== $status || false === strpos($type, 'zip')) {
-			$data = json_decode((string) file_get_contents($tmp), true);
-			@unlink($tmp);
+		$data = json_decode((string) wp_remote_retrieve_body($response), true);
+		if (200 !== $status || !is_array($data)) {
 			$message = is_array($data) && !empty($data['message']) ? sanitize_text_field($data['message']) : __('Licenza non autorizzata o pacchetto non disponibile.', 'smart-ecommerce-store');
 			return new WP_Error('ses_premium_denied', $message);
+		}
+
+		$download_url = esc_url_raw((string) ($data['download_url'] ?? ''));
+		$entitlement = sanitize_text_field((string) ($data['entitlement'] ?? ''));
+		if (!wp_http_validate_url($download_url) || 'fast-api.freemius.com' !== strtolower((string) wp_parse_url($download_url, PHP_URL_HOST))) {
+			return new WP_Error('ses_package_url_invalid', __('Freemius non ha restituito un download attendibile.', 'smart-ecommerce-store'));
+		}
+
+		$tmp = wp_tempnam($product['slug'] . '.zip');
+		if (!$tmp) { return new WP_Error('ses_temp_failed', __('Impossibile preparare il download Premium.', 'smart-ecommerce-store')); }
+		$package = wp_remote_get($download_url, array(
+			'timeout' => 180,
+			'sslverify' => true,
+			'stream' => true,
+			'filename' => $tmp,
+		));
+		if (is_wp_error($package)) { @unlink($tmp); return $package; }
+		$package_type = strtolower((string) wp_remote_retrieve_header($package, 'content-type'));
+		if (200 !== (int) wp_remote_retrieve_response_code($package) || (false === strpos($package_type, 'zip') && false === strpos($package_type, 'octet-stream'))) {
+			@unlink($tmp);
+			return new WP_Error('ses_package_invalid', __('Il pacchetto Premium ricevuto non è valido.', 'smart-ecommerce-store'));
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';

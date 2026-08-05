@@ -59,7 +59,8 @@ foreach (array(
 	"'license_key' => \$license_key" => 'license authorization payload',
 	"'entitlement'" => 'opaque entitlement receipt',
 	"'Accept' => 'application/json'" => 'JSON installation contract',
-	'fast-api.freemius.com' => 'trusted signed package host',
+	"array('api.freemius.com', 'fast-api.freemius.com')" => 'trusted signed package hosts',
+	"'https' !== \$download_scheme" => 'HTTPS-only premium package URL',
 ) as $needle => $label) {
 	if (false === strpos($installer, $needle) && false === strpos(file_get_contents($root . '/smart-ecommerce-store.php'), $needle)) {
 		fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1);

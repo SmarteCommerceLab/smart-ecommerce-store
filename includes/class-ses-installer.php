@@ -90,7 +90,10 @@ final class SES_Installer {
 
 		$download_url = esc_url_raw((string) ($data['download_url'] ?? ''));
 		$entitlement = sanitize_text_field((string) ($data['entitlement'] ?? ''));
-		if (!wp_http_validate_url($download_url) || 'fast-api.freemius.com' !== strtolower((string) wp_parse_url($download_url, PHP_URL_HOST))) {
+		$download_scheme = strtolower((string) wp_parse_url($download_url, PHP_URL_SCHEME));
+		$download_host = strtolower((string) wp_parse_url($download_url, PHP_URL_HOST));
+		$trusted_download_hosts = array('api.freemius.com', 'fast-api.freemius.com');
+		if (!wp_http_validate_url($download_url) || 'https' !== $download_scheme || !in_array($download_host, $trusted_download_hosts, true)) {
 			return new WP_Error('ses_package_url_invalid', __('Freemius non ha restituito un download attendibile.', 'smart-ecommerce-store'));
 		}
 

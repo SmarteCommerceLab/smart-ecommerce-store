@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.7
+Stable tag: 0.2.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,9 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.2.8 =
+* Rimossa la segnalazione obsoleta quando versione installata e versione disponibile coincidono.
 
 = 0.2.7 =
 * Aggiunti Dashboard, Documentazione, controllo aggiornamenti, pagina prodotto e supporto nella schermata Plugin.

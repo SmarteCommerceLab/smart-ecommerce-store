@@ -119,8 +119,20 @@ final class SES_Updater {
 	public static function updates($transient) {
 		if (!is_object($transient)) { return $transient; }
 		$release = self::release();
-		if (!$release || !version_compare($release['version'], SES_VERSION, '>')) { return $transient; }
 		$key = plugin_basename(SES_FILE);
+		if (!$release) { return $transient; }
+		if (!version_compare($release['version'], SES_VERSION, '>')) {
+			if (isset($transient->response) && is_array($transient->response)) { unset($transient->response[$key]); }
+			if (!isset($transient->no_update) || !is_array($transient->no_update)) { $transient->no_update = array(); }
+			$transient->no_update[$key] = (object) array(
+				'id' => SES_UPDATE_URL, 'slug' => 'smart-ecommerce-store', 'plugin' => $key,
+				'new_version' => SES_VERSION, 'url' => $release['homepage'], 'package' => '',
+				'requires' => $release['requires'], 'requires_php' => $release['requires_php'],
+			);
+			return $transient;
+		}
+		if (!isset($transient->response) || !is_array($transient->response)) { $transient->response = array(); }
+		if (isset($transient->no_update) && is_array($transient->no_update)) { unset($transient->no_update[$key]); }
 		$transient->response[$key] = (object) array(
 			'id' => 'smart-ecommerce-store', 'slug' => 'smart-ecommerce-store', 'plugin' => $key,
 			'new_version' => $release['version'], 'url' => $release['homepage'], 'package' => $release['package'],

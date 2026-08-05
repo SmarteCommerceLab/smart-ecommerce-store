@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.2.3 =
+* Move the Store to the final WordPress administration menu group, next to Smart Product Hub.
+* Align product action and details buttons consistently.
+* Keep all visible product references on official Smart eCommerce website pages.
 
 = 0.2.2 =
 * Add native WordPress updates from the Smart eCommerce repository.

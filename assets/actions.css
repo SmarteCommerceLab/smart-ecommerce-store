@@ -1,0 +1,23 @@
+.ses-product-actions .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 40px;
+	margin: 0;
+	padding: 0 16px;
+	line-height: 1.2;
+	text-align: center;
+}
+
+.ses-product-actions .ses-details-button {
+	min-width: 92px;
+}
+
+.ses-product-actions form:not(.ses-premium-form) {
+	display: flex;
+	align-items: stretch;
+}
+
+.ses-product-actions form:not(.ses-premium-form) .button {
+	height: 100%;
+}

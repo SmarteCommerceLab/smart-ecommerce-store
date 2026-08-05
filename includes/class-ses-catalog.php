@@ -81,8 +81,8 @@ final class SES_Catalog {
 				'channel' => $channel,
 				'wordpress_org_slug' => sanitize_key((string) ($item['wordpress_org_slug'] ?? $slug)),
 				'checkout_url' => $checkout_url,
-				'homepage' => esc_url_raw((string) ($item['homepage'] ?? '')),
-				'documentation_url' => esc_url_raw((string) ($item['documentation_url'] ?? '')),
+				'homepage' => self::official_product_url((string) ($item['homepage'] ?? '')),
+				'documentation_url' => self::official_product_url((string) ($item['documentation_url'] ?? '')),
 				'icon_url' => self::trusted_asset_url((string) ($item['icon_url'] ?? '')),
 			);
 		}
@@ -105,6 +105,16 @@ final class SES_Catalog {
 	private static function trusted_checkout_url($url) {
 		return 'https' === strtolower((string) wp_parse_url($url, PHP_URL_SCHEME))
 			&& 'checkout.freemius.com' === strtolower((string) wp_parse_url($url, PHP_URL_HOST));
+	}
+
+	private static function official_product_url($url) {
+		$url = esc_url_raw($url);
+		$host = strtolower((string) wp_parse_url($url, PHP_URL_HOST));
+		if ('https' === strtolower((string) wp_parse_url($url, PHP_URL_SCHEME))
+			&& in_array($host, array('smartecommerce.it', 'www.smartecommerce.it'), true)) {
+			return $url;
+		}
+		return 'https://smartecommerce.it/prodotti/';
 	}
 
 	private static function public_keys() {

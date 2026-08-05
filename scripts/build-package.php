@@ -1,6 +1,6 @@
 <?php
 $root = dirname(__DIR__);
-$version = '0.2.2';
+$version = '0.2.3';
 $slug = 'smart-ecommerce-store';
 $dist = $root . '/dist';
 $stage = $dist . '/' . $slug;
@@ -43,6 +43,7 @@ $required = array(
 	$slug . '/readme.txt',
 	$slug . '/assets/admin.css',
 	$slug . '/assets/licenses.css',
+	$slug . '/assets/actions.css',
 	$slug . '/includes/class-ses-admin.php',
 	$slug . '/includes/class-ses-catalog.php',
 	$slug . '/includes/class-ses-licenses.php',

@@ -30,6 +30,7 @@ $assertions = array(
 	"array('wordpress_org', 'freemius')" => 'public channel allow-list',
 	"checkout.freemius.com" => 'trusted checkout host',
 	"repository.smartecommerce.it" => 'trusted catalog host',
+	"official_product_url" => 'official Smart eCommerce product links',
 );
 foreach ($assertions as $needle => $label) {
 	if (false === strpos($catalog, $needle)) { fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1); }
@@ -43,6 +44,8 @@ foreach (array(
 	'smart-admin-shell' => 'design system shell',
 	'smart-admin-notices' => 'captured WordPress notices',
 	'current_user_can' => 'page capability check',
+	'const MENU_POSITION = 82' => 'final administration menu placement',
+	'ses-details-button' => 'consistent details button styling',
 ) as $needle => $label) {
 	if (false === strpos($admin . $main, $needle)) { fwrite(STDERR, "Missing UI contract: {$label}\n"); exit(1); }
 }

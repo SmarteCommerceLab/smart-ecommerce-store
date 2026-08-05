@@ -3,6 +3,7 @@ if (!defined('ABSPATH')) { exit; }
 
 final class SES_Admin {
 	const MENU_SLUG = 'smart-ecommerce-store';
+	const MENU_POSITION = 82;
 	private static $captured_notices = '';
 
 	public static function register() {
@@ -42,7 +43,7 @@ final class SES_Admin {
 			__('Smart eCommerce Store', 'smart-ecommerce-store'),
 			__('Smart Store', 'smart-ecommerce-store'),
 			'install_plugins', self::MENU_SLUG,
-			array(__CLASS__, 'render_dashboard'), 'dashicons-store', 58
+			array(__CLASS__, 'render_dashboard'), 'dashicons-store', self::MENU_POSITION
 		);
 		foreach (self::get_subpages() as $page) {
 			add_submenu_page(self::MENU_SLUG, $page['page_title'], $page['menu_title'], $page['capability'], $page['slug'], $page['callback']);
@@ -55,6 +56,7 @@ final class SES_Admin {
 		if (false === strpos((string) $hook, 'smart-ecommerce-store') && false === strpos((string) $hook, 'ses-')) { return; }
 		wp_enqueue_style('dashicons');
 		wp_enqueue_style('ses-admin', SES_URL . 'assets/admin.css', array('dashicons'), SES_VERSION);
+		wp_enqueue_style('ses-actions', SES_URL . 'assets/actions.css', array('ses-admin'), SES_VERSION);
 		wp_enqueue_style('ses-licenses', SES_URL . 'assets/licenses.css', array('ses-admin'), SES_VERSION);
 	}
 
@@ -158,7 +160,7 @@ final class SES_Admin {
 				<?php elseif (!$product['installed']) : self::action_form($product, 'install', __('Installa Free', 'smart-ecommerce-store')); ?>
 				<?php elseif (!$product['active']) : self::action_form($product, 'activate', __('Attiva', 'smart-ecommerce-store')); ?>
 				<?php else : ?><span class="ses-ready"><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Pronto all’uso', 'smart-ecommerce-store'); ?></span><?php endif; ?>
-				<?php if ($product['homepage']) : ?><a class="button button-link" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>
+				<?php if ($product['homepage']) : ?><a class="button ses-details-button" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>
 			</div>
 		</article>
 		<?php

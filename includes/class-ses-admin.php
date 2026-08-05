@@ -5,6 +5,7 @@ final class SES_Admin {
 	const MENU_SLUG = 'smart-ecommerce-store';
 	const MENU_POSITION = 82;
 	private static $captured_notices = '';
+	private static $notice_buffer_level = null;
 
 	public static function register() {
 		add_action('admin_menu', array(__CLASS__, 'menu'));
@@ -195,6 +196,23 @@ final class SES_Admin {
 
 	private static function error($error) { echo '<div class="notice notice-error inline"><p>' . esc_html($error->get_error_message()) . '</p></div>'; }
 	private static function notice() { if (empty($_GET['ses_message'])) { return; } $status = sanitize_key(wp_unslash($_GET['ses_status'] ?? 'error')); $message = sanitize_text_field(wp_unslash($_GET['ses_message'])); printf('<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>', 'success' === $status ? 'success' : 'error', esc_html($message)); }
-	public static function capture_notices_start() { if (self::$captured_notices === '') { ob_start(); } }
-	public static function capture_notices_end() { if (ob_get_level()) { self::$captured_notices .= (string) ob_get_clean(); } }
+	public static function capture_notices_start() {
+		if (!self::is_plugin_screen() || null !== self::$notice_buffer_level) { return; }
+		self::$notice_buffer_level = ob_get_level();
+		ob_start();
+	}
+
+	public static function capture_notices_end() {
+		if (!self::is_plugin_screen() || null === self::$notice_buffer_level) { return; }
+		$expected_level = self::$notice_buffer_level + 1;
+		if ($expected_level === ob_get_level()) {
+			self::$captured_notices .= (string) ob_get_clean();
+		}
+		self::$notice_buffer_level = null;
+	}
+
+	private static function is_plugin_screen() {
+		$page = isset($_GET['page']) ? sanitize_key((string) wp_unslash($_GET['page'])) : '';
+		return self::MENU_SLUG === $page || 0 === strpos($page, 'ses-');
+	}
 }

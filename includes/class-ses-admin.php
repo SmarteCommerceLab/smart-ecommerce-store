@@ -161,6 +161,7 @@ final class SES_Admin {
 				<?php elseif (!$product['installed']) : self::action_form($product, 'install', __('Installa Free', 'smart-ecommerce-store')); ?>
 				<?php elseif (!$product['active']) : self::action_form($product, 'activate', __('Attiva', 'smart-ecommerce-store')); ?>
 				<?php else : ?><span class="ses-ready"><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Pronto all’uso', 'smart-ecommerce-store'); ?></span><?php endif; ?>
+				<?php if ('freemius' === $product['channel'] && $product['active']) : self::action_form($product, 'reset_freemius', __('Ripristina collegamento', 'smart-ecommerce-store'), false); endif; ?>
 				<?php if ($product['homepage']) : ?><a class="button ses-details-button" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>
 			</div>
 		</article>
@@ -190,8 +191,8 @@ final class SES_Admin {
 		?><form class="ses-premium-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="ses_product_action"><input type="hidden" name="product_action" value="premium_install"><input type="hidden" name="slug" value="<?php echo esc_attr($product['slug']); ?>"><?php wp_nonce_field('ses_product_' . $product['slug']); ?><label for="<?php echo esc_attr($field_id); ?>"><?php esc_html_e('Hai già una licenza?', 'smart-ecommerce-store'); ?></label><div><input id="<?php echo esc_attr($field_id); ?>" name="license_key" type="password" required minlength="20" autocomplete="off" placeholder="<?php esc_attr_e('Inserisci la chiave Freemius', 'smart-ecommerce-store'); ?>"><button class="button button-primary" type="submit"><?php esc_html_e('Verifica e installa', 'smart-ecommerce-store'); ?></button></div><p class="description"><?php esc_html_e('Lo Store verifica il diritto al download senza creare un’installazione Freemius. La chiave non viene salvata; dopo l’installazione la inserirai nel plugin.', 'smart-ecommerce-store'); ?></p></form><?php
 	}
 
-	private static function action_form(array $product, $action, $label) {
-		?><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="ses_product_action"><input type="hidden" name="product_action" value="<?php echo esc_attr($action); ?>"><input type="hidden" name="slug" value="<?php echo esc_attr($product['slug']); ?>"><?php wp_nonce_field('ses_product_' . $product['slug']); ?><button class="button button-primary" type="submit"><?php echo esc_html($label); ?></button></form><?php
+	private static function action_form(array $product, $action, $label, $primary = true) {
+		?><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="ses_product_action"><input type="hidden" name="product_action" value="<?php echo esc_attr($action); ?>"><input type="hidden" name="slug" value="<?php echo esc_attr($product['slug']); ?>"><?php wp_nonce_field('ses_product_' . $product['slug']); ?><button class="button<?php echo $primary ? ' button-primary' : ''; ?>" type="submit"><?php echo esc_html($label); ?></button></form><?php
 	}
 
 	private static function error($error) { echo '<div class="notice notice-error inline"><p>' . esc_html($error->get_error_message()) . '</p></div>'; }

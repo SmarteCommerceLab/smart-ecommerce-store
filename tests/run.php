@@ -98,6 +98,8 @@ foreach (array(
 	'15 * MINUTE_IN_SECONDS' => 'bounded update cache',
 	'unset($transient->response[$key])' => 'stale update removal',
 	'$transient->no_update[$key]' => 'current version state',
+	"'icons' => \$release['icons']" => 'product icons in WordPress update responses',
+	'function normalize_icons' => 'trusted icon URL normalization',
 ) as $needle => $label) {
 	if (false === strpos($updater, $needle)) { fwrite(STDERR, "Missing updater assertion: {$label}\n"); exit(1); }
 }

@@ -87,6 +87,7 @@ final class SES_Updater {
 			'package' => $release['package'],
 			'requires' => $release['requires'],
 			'requires_php' => $release['requires_php'],
+			'icons' => $release['icons'],
 			'autoupdate' => false,
 		);
 	}
@@ -110,6 +111,7 @@ final class SES_Updater {
 			'requires_php' => sanitize_text_field((string) ($data['requires_php'] ?? '')),
 			'description' => wp_kses_post((string) ($data['description'] ?? '')),
 			'changelog' => wp_kses_post((string) ($data['changelog'] ?? '')),
+			'icons' => self::normalize_icons($data['icons'] ?? array()),
 		);
 		if (!$release['version']) { return null; }
 		set_site_transient(self::CACHE_KEY, $release, self::CACHE_TTL);
@@ -128,6 +130,7 @@ final class SES_Updater {
 				'id' => SES_UPDATE_URL, 'slug' => 'smart-ecommerce-store', 'plugin' => $key,
 				'new_version' => SES_VERSION, 'url' => $release['homepage'], 'package' => '',
 				'requires' => $release['requires'], 'requires_php' => $release['requires_php'],
+				'icons' => $release['icons'],
 			);
 			return $transient;
 		}
@@ -137,6 +140,7 @@ final class SES_Updater {
 			'id' => 'smart-ecommerce-store', 'slug' => 'smart-ecommerce-store', 'plugin' => $key,
 			'new_version' => $release['version'], 'url' => $release['homepage'], 'package' => $release['package'],
 			'requires' => $release['requires'], 'requires_php' => $release['requires_php'],
+			'icons' => $release['icons'],
 		);
 		return $transient;
 	}
@@ -149,6 +153,7 @@ final class SES_Updater {
 			'name' => $release['name'], 'slug' => 'smart-ecommerce-store', 'version' => $release['version'],
 			'homepage' => $release['homepage'], 'download_link' => $release['package'],
 			'requires' => $release['requires'], 'requires_php' => $release['requires_php'],
+			'icons' => $release['icons'],
 			'sections' => array('description' => $release['description'], 'changelog' => $release['changelog']),
 		);
 	}
@@ -172,5 +177,15 @@ final class SES_Updater {
 	private static function trusted_url($url) {
 		return 'https' === strtolower((string) wp_parse_url($url, PHP_URL_SCHEME))
 			&& 'repository.smartecommerce.it' === strtolower((string) wp_parse_url($url, PHP_URL_HOST));
+	}
+
+	private static function normalize_icons($icons) {
+		$normalized = array();
+		$icon_values = (array) $icons;
+		foreach (array('1x', '2x', 'svg') as $density) {
+			$url = esc_url_raw((string) ($icon_values[$density] ?? ''));
+			if ($url && self::trusted_url($url)) { $normalized[$density] = $url; }
+		}
+		return $normalized;
 	}
 }

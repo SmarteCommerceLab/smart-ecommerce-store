@@ -71,6 +71,10 @@ foreach (array(
 	"'Accept' => 'application/json'" => 'JSON installation contract',
 	"array('api.freemius.com', 'fast-api.freemius.com')" => 'trusted signed package hosts',
 	"'https' !== \$download_scheme" => 'HTTPS-only premium package URL',
+	"'reset_freemius' === \$action" => 'governed Freemius recovery action',
+	'delete_account_event' => 'official Freemius disconnect API',
+	'freemius_product_id' => 'catalog-bound Freemius product identity',
+	'mark_pending_reset' => 'post-install stale connection recovery',
 ) as $needle => $label) {
 	if (false === strpos($installer, $needle) && false === strpos(file_get_contents($root . '/smart-ecommerce-store.php'), $needle)) {
 		fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1);

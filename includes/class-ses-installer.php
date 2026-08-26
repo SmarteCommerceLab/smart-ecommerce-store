@@ -2,6 +2,8 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class SES_Installer {
+	const PENDING_RESET_OPTION = 'ses_pending_freemius_reset';
+
 	public static function register() {
 		add_action('admin_post_ses_product_action', array(__CLASS__, 'handle'));
 	}
@@ -19,6 +21,8 @@ final class SES_Installer {
 		$product = $catalog['products'][$slug];
 		if ('activate' === $action) {
 			$result = self::activate($product);
+		} elseif ('reset_freemius' === $action) {
+			$result = self::reset_freemius($product);
 		} elseif ('premium_install' === $action) {
 			$result = self::install_premium($product, sanitize_text_field(wp_unslash($_POST['license_key'] ?? '')));
 		} else {
@@ -52,7 +56,60 @@ final class SES_Installer {
 		$products = SES_Products::enrich(array('products' => array($product['slug'] => $product)));
 		$file = (string) ($products[$product['slug']]['plugin_file'] ?? '');
 		if (!$file) { return new WP_Error('ses_not_installed', __('Installa prima il plugin.', 'smart-ecommerce-store')); }
-		return activate_plugin($file, '', is_multisite() && is_network_admin(), false);
+		$result = activate_plugin($file, '', is_multisite() && is_network_admin(), false);
+		if (!is_wp_error($result) && self::has_pending_reset($product['slug'])) {
+			$reset = self::reset_freemius($product);
+			if (is_wp_error($reset)) { return $reset; }
+		}
+		return $result;
+	}
+
+	private static function reset_freemius(array $product) {
+		if ('freemius' !== ($product['channel'] ?? '') || !current_user_can('activate_plugins')) {
+			return new WP_Error('ses_freemius_reset_denied', __('Il collegamento Freemius non può essere ripristinato.', 'smart-ecommerce-store'));
+		}
+		$product_id = self::freemius_product_id($product);
+		if (!$product_id || !function_exists('freemius')) {
+			return new WP_Error('ses_freemius_runtime_missing', __('Attiva prima il plugin Premium, quindi riprova.', 'smart-ecommerce-store'));
+		}
+		$instance = freemius($product_id);
+		if (
+			!is_object($instance)
+			|| !is_callable(array($instance, 'get_id'))
+			|| (int) $instance->get_id() !== $product_id
+			|| !is_callable(array($instance, 'delete_account_event'))
+		) {
+			return new WP_Error('ses_freemius_identity_invalid', __('Il runtime Freemius del prodotto non corrisponde al catalogo.', 'smart-ecommerce-store'));
+		}
+		$instance->delete_account_event(false);
+		self::clear_pending_reset($product['slug']);
+		SES_Audit::write('freemius_connection_reset', array('slug' => $product['slug'], 'product_id' => $product_id));
+		return true;
+	}
+
+	private static function freemius_product_id(array $product) {
+		if ('checkout.freemius.com' !== strtolower((string) wp_parse_url($product['checkout_url'] ?? '', PHP_URL_HOST))) { return 0; }
+		$path = (string) wp_parse_url($product['checkout_url'], PHP_URL_PATH);
+		return preg_match('#/plugin/(\d+)(?:/|$)#', $path, $match) ? (int) $match[1] : 0;
+	}
+
+	private static function has_pending_reset($slug) {
+		$pending = get_option(self::PENDING_RESET_OPTION, array());
+		return is_array($pending) && !empty($pending[$slug]);
+	}
+
+	private static function mark_pending_reset($slug) {
+		$pending = get_option(self::PENDING_RESET_OPTION, array());
+		$pending = is_array($pending) ? $pending : array();
+		$pending[$slug] = time();
+		update_option(self::PENDING_RESET_OPTION, $pending, false);
+	}
+
+	private static function clear_pending_reset($slug) {
+		$pending = get_option(self::PENDING_RESET_OPTION, array());
+		if (!is_array($pending) || !isset($pending[$slug])) { return; }
+		unset($pending[$slug]);
+		$pending ? update_option(self::PENDING_RESET_OPTION, $pending, false) : delete_option(self::PENDING_RESET_OPTION);
 	}
 
 	private static function install_premium(array $product, $license_key) {
@@ -126,6 +183,7 @@ final class SES_Installer {
 		wp_clean_plugins_cache(true);
 		if (true === $result) {
 			SES_Licenses::store_entitlement($product['slug'], $entitlement);
+			self::mark_pending_reset($product['slug']);
 		}
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_premium_install_failed', __('Installazione Premium non completata.', 'smart-ecommerce-store')));
 	}

@@ -1,7 +1,16 @@
 <?php
 $root = dirname(__DIR__);
-$version = '0.2.8';
 $slug = 'smart-ecommerce-store';
+$main = file_get_contents($root . '/smart-ecommerce-store.php');
+if (
+	!preg_match('/^ \* Version:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$/m', $main, $header_match)
+	|| !preg_match("/define\('SES_VERSION',\s*'([^']+)'\);/", $main, $constant_match)
+	|| $header_match[1] !== $constant_match[1]
+) {
+	fwrite(STDERR, "Plugin header and SES_VERSION must contain the same semantic version.\n");
+	exit(1);
+}
+$version = $header_match[1];
 $dist = $root . '/dist';
 $stage = $dist . '/' . $slug;
 

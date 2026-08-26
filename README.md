@@ -12,7 +12,8 @@ The Store consumes the signed repository catalog but accepts only entries with a
 
 - Free installation through WordPress.org.
 - Premium purchase through Freemius checkout.
-- Premium license verification and authorized installation through the Smart eCommerce server proxy.
+- Premium license verification and authorized installation through the Smart eCommerce server proxy, without creating a Freemius install.
+- Site activation remains exclusively managed by the installed product's Freemius SDK.
 - Clear installed and active states.
 - No internal catalog, development tools or repository administration.
 

@@ -25,7 +25,10 @@ final class SES_Installer {
 			$result = self::install_from_wordpress_org($product);
 		}
 		SES_Audit::write('product_' . $action, array('slug' => $slug, 'result' => is_wp_error($result) ? $result->get_error_code() : 'success'));
-		self::redirect(is_wp_error($result) ? 'error' : 'success', is_wp_error($result) ? $result->get_error_message() : __('Operazione completata.', 'smart-ecommerce-store'));
+		$success_message = 'premium_install' === $action
+			? __('Pacchetto Premium installato. Attiva ora il plugin e inserisci la licenza nella schermata Freemius del prodotto.', 'smart-ecommerce-store')
+			: __('Operazione completata.', 'smart-ecommerce-store');
+		self::redirect(is_wp_error($result) ? 'error' : 'success', is_wp_error($result) ? $result->get_error_message() : $success_message);
 	}
 
 	private static function install_from_wordpress_org(array $product) {
@@ -90,6 +93,9 @@ final class SES_Installer {
 
 		$download_url = esc_url_raw((string) ($data['download_url'] ?? ''));
 		$entitlement = sanitize_text_field((string) ($data['entitlement'] ?? ''));
+		if (strlen($entitlement) < 32 || strlen($entitlement) > 4096) {
+			return new WP_Error('ses_entitlement_invalid', __('Il servizio non ha restituito una ricevuta di licenza valida.', 'smart-ecommerce-store'));
+		}
 		$download_scheme = strtolower((string) wp_parse_url($download_url, PHP_URL_SCHEME));
 		$download_host = strtolower((string) wp_parse_url($download_url, PHP_URL_HOST));
 		$trusted_download_hosts = array('api.freemius.com', 'fast-api.freemius.com');
@@ -118,7 +124,7 @@ final class SES_Installer {
 		$result = $upgrader->install($tmp);
 		@unlink($tmp);
 		wp_clean_plugins_cache(true);
-		if (true === $result && $entitlement) {
+		if (true === $result) {
 			SES_Licenses::store_entitlement($product['slug'], $entitlement);
 		}
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_premium_install_failed', __('Installazione Premium non completata.', 'smart-ecommerce-store')));

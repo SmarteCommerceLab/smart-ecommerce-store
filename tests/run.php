@@ -23,6 +23,7 @@ $installer = file_get_contents($root . '/includes/class-ses-installer.php');
 $licenses = file_get_contents($root . '/includes/class-ses-licenses.php');
 $admin = file_get_contents($root . '/includes/class-ses-admin.php');
 $main = file_get_contents($root . '/smart-ecommerce-store.php');
+$builder = file_get_contents($root . '/scripts/build-package.php');
 $updater = file_get_contents($root . '/includes/class-ses-updater.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
@@ -53,11 +54,20 @@ foreach (array(
 }
 
 foreach (array(
+	"preg_match('/^ \\* Version:" => 'package version from plugin header',
+	"SES_VERSION" => 'package version identity check',
+) as $needle => $label) {
+	if (false === strpos($builder, $needle)) { fwrite(STDERR, "Missing package assertion: {$label}\n"); exit(1); }
+}
+
+foreach (array(
 	'SES_PREMIUM_INSTALL_URL' => 'server-side premium endpoint',
 	"'stream' => true" => 'streamed premium download',
 	"'sslverify' => true" => 'TLS verification',
 	"'license_key' => \$license_key" => 'license authorization payload',
 	"'entitlement'" => 'opaque entitlement receipt',
+	'ses_entitlement_invalid' => 'missing entitlement rejection',
+	'Attiva ora il plugin' => 'explicit post-install activation step',
 	"'Accept' => 'application/json'" => 'JSON installation contract',
 	"array('api.freemius.com', 'fast-api.freemius.com')" => 'trusted signed package hosts',
 	"'https' !== \$download_scheme" => 'HTTPS-only premium package URL',

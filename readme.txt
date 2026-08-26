@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.10
+Stable tag: 0.2.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,7 +22,7 @@ The plugin retrieves a signed public product catalog from repository.smartecomme
 
 Free plugin installation uses the WordPress.org Plugins API and download service. WordPress.org privacy policy: https://wordpress.org/about/privacy/
 
-Premium purchase buttons open checkout.freemius.com only after an administrator clicks the button. A customer who already owns a license can submit it explicitly to repository.smartecommerce.it; the service forwards the activation to Freemius and, only after authorization, returns the current Premium package. The Store does not retain the license key. It stores an opaque, site-bound entitlement receipt and periodically sends that receipt, the site URL and a random site identifier to repository.smartecommerce.it to display license status and expiration. Freemius privacy policy: https://freemius.com/privacy/
+Premium purchase buttons open checkout.freemius.com only after an administrator clicks the button. A customer who already owns a license can submit it explicitly to repository.smartecommerce.it; the service verifies the active license without creating a Freemius installation and returns the current Premium package only after authorization. The product's Freemius SDK remains the sole owner of site activation. The Store does not retain the license key. It stores an opaque, site-bound entitlement receipt and periodically sends that receipt, the site URL and a random site identifier to repository.smartecommerce.it to display license validity and expiration. Freemius privacy policy: https://freemius.com/privacy/
 
 == Installation ==
 
@@ -41,6 +41,11 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.2.11 =
+* Verifica la licenza Premium senza creare installazioni Freemius premature.
+* Lascia l'attivazione del sito all'SDK Freemius del prodotto installato.
+* Richiede una ricevuta di licenza valida e chiarisce il passaggio di attivazione successivo.
 
 = 0.2.10 =
 * Accetta i domini HTTPS ufficiali usati da Freemius per il download protetto del pacchetto Premium.

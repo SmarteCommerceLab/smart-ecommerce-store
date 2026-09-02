@@ -84,15 +84,16 @@ final class SES_Admin {
 			'icon' => 'dashicons-store', 'description' => __('Percorso di acquisto guidato.', 'smart-ecommerce-store'),
 		)), self::get_subpages());
 		?>
-		<div class="wrap smart-admin-wrap" style="--smart-header:<?php echo esc_attr($header); ?>">
+		<div class="wrap smart-admin-wrap" style="--smart-header:<?php echo esc_attr(sanitize_hex_color($header) ?: '#1d2327'); ?>">
 			<header class="smart-admin-header">
 				<div class="smart-admin-header-brand"><span class="smart-admin-logo">Se</span><div><strong><?php echo esc_html(SES_PRODUCT_NAME); ?></strong><small><?php esc_html_e('Catalogo ufficiale Smart eCommerce', 'smart-ecommerce-store'); ?></small></div></div>
 				<div class="smart-admin-header-actions"><span>v<?php echo esc_html(SES_PRODUCT_VERSION); ?></span></div>
 			</header>
 			<div class="smart-admin-shell">
 				<aside class="smart-admin-sidebar"><nav class="smart-admin-nav" aria-label="<?php esc_attr_e('Navigazione Store', 'smart-ecommerce-store'); ?>">
-					<?php foreach ($pages as $page) : $active = $current === $page['slug']; ?>
-						<a href="<?php echo esc_url(add_query_arg('page', $page['slug'], admin_url('admin.php'))); ?>" class="<?php echo $active ? 'is-active' : ''; ?>" <?php echo $active ? 'aria-current="page"' : ''; ?>><span class="dashicons <?php echo esc_attr($page['icon']); ?>"></span><span><strong><?php echo esc_html($page['menu_title']); ?></strong><small><?php echo esc_html($page['description']); ?></small></span></a>
+					<?php foreach ($pages as $index => $page) : $active = $current === $page['slug']; ?>
+						<?php if (0 === $index) : ?><span class="smart-admin-nav-section"><?php esc_html_e('Acquista', 'smart-ecommerce-store'); ?></span><?php elseif (2 === $index) : ?><span class="smart-admin-nav-section"><?php esc_html_e('I tuoi prodotti', 'smart-ecommerce-store'); ?></span><?php endif; ?>
+						<a href="<?php echo esc_url(add_query_arg('page', $page['slug'], admin_url('admin.php'))); ?>" class="smart-admin-nav-item<?php echo $active ? ' smart-admin-nav-item-active' : ''; ?>" <?php echo $active ? 'aria-current="page"' : ''; ?>><span class="smart-admin-nav-icon"><span class="dashicons <?php echo esc_attr($page['icon']); ?>"></span></span><span class="smart-admin-nav-copy"><strong><?php echo esc_html($page['menu_title']); ?></strong><small><?php echo esc_html($page['description']); ?></small></span></a>
 					<?php endforeach; ?>
 				</nav></aside>
 				<main class="smart-admin-main">
@@ -120,10 +121,10 @@ final class SES_Admin {
 		if (is_wp_error($products)) { self::error($products); return; }
 		$installed = count(array_filter($products, static function ($product) { return $product['installed']; }));
 		?>
-		<section class="ses-status-strip" aria-label="<?php esc_attr_e('Stato dello Store', 'smart-ecommerce-store'); ?>">
-			<div><span><?php esc_html_e('Prodotti disponibili', 'smart-ecommerce-store'); ?></span><strong><?php echo esc_html(count($products)); ?></strong></div>
-			<div><span><?php esc_html_e('Installati', 'smart-ecommerce-store'); ?></span><strong><?php echo esc_html($installed); ?></strong></div>
-			<div><span><?php esc_html_e('Catalogo', 'smart-ecommerce-store'); ?></span><strong class="is-ok"><?php esc_html_e('Verificato', 'smart-ecommerce-store'); ?></strong></div>
+		<section class="smart-dash-stats" aria-label="<?php esc_attr_e('Stato dello Store', 'smart-ecommerce-store'); ?>">
+			<div class="smart-dash-stat-card"><span class="smart-dash-stat-icon"><span class="dashicons dashicons-store"></span></span><span class="smart-dash-stat-text"><span class="smart-dash-stat-label"><?php esc_html_e('Prodotti disponibili', 'smart-ecommerce-store'); ?></span><strong class="smart-dash-stat-value"><?php echo esc_html(count($products)); ?></strong></span></div>
+			<div class="smart-dash-stat-card"><span class="smart-dash-stat-icon"><span class="dashicons dashicons-admin-plugins"></span></span><span class="smart-dash-stat-text"><span class="smart-dash-stat-label"><?php esc_html_e('Installati', 'smart-ecommerce-store'); ?></span><strong class="smart-dash-stat-value"><?php echo esc_html($installed); ?></strong></span></div>
+			<div class="smart-dash-stat-card"><span class="smart-dash-stat-icon"><span class="dashicons dashicons-shield-alt"></span></span><span class="smart-dash-stat-text"><span class="smart-dash-stat-label"><?php esc_html_e('Catalogo', 'smart-ecommerce-store'); ?></span><strong class="smart-dash-stat-value is-ok"><?php esc_html_e('Verificato', 'smart-ecommerce-store'); ?></strong></span></div>
 		</section>
 		<section class="ses-journey"><h2><?php esc_html_e('Come procedere', 'smart-ecommerce-store'); ?></h2><ol><li><strong><?php esc_html_e('Scegli', 'smart-ecommerce-store'); ?></strong><span><?php esc_html_e('Confronta Free e Premium.', 'smart-ecommerce-store'); ?></span></li><li><strong><?php esc_html_e('Installa', 'smart-ecommerce-store'); ?></strong><span><?php esc_html_e('Lo Store verifica la licenza senza attivarla e installa il pacchetto.', 'smart-ecommerce-store'); ?></span></li><li><strong><?php esc_html_e('Attiva nel prodotto', 'smart-ecommerce-store'); ?></strong><span><?php esc_html_e('Apri il plugin installato e completa l’attivazione Freemius.', 'smart-ecommerce-store'); ?></span></li></ol></section>
 		<?php self::product_list($products, false); ?>
@@ -195,7 +196,7 @@ final class SES_Admin {
 		?><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="ses_product_action"><input type="hidden" name="product_action" value="<?php echo esc_attr($action); ?>"><input type="hidden" name="slug" value="<?php echo esc_attr($product['slug']); ?>"><?php wp_nonce_field('ses_product_' . $product['slug']); ?><button class="button<?php echo $primary ? ' button-primary' : ''; ?>" type="submit"><?php echo esc_html($label); ?></button></form><?php
 	}
 
-	private static function error($error) { echo '<div class="notice notice-error inline"><p>' . esc_html($error->get_error_message()) . '</p></div>'; }
+	private static function error($error) { echo '<section class="ses-state ses-state-error" role="alert"><span class="dashicons dashicons-shield" aria-hidden="true"></span><div><h2>' . esc_html__('Catalogo temporaneamente non disponibile', 'smart-ecommerce-store') . '</h2><p>' . esc_html($error->get_error_message()) . '</p><p>' . esc_html__('Per sicurezza acquisti e installazioni restano disabilitati. I prodotti già installati non vengono modificati.', 'smart-ecommerce-store') . '</p><p><a class="button" href="' . esc_url(wp_nonce_url(add_query_arg(array('page' => self::MENU_SLUG, 'refresh' => 1), admin_url('admin.php')), 'ses_refresh')) . '">' . esc_html__('Riprova aggiornamento', 'smart-ecommerce-store') . '</a></p></div></section>'; }
 	private static function notice() { if (empty($_GET['ses_message'])) { return; } $status = sanitize_key(wp_unslash($_GET['ses_status'] ?? 'error')); $message = sanitize_text_field(wp_unslash($_GET['ses_message'])); printf('<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>', 'success' === $status ? 'success' : 'error', esc_html($message)); }
 	public static function capture_notices_start() {
 		if (!self::is_plugin_screen() || null !== self::$notice_buffer_level) { return; }

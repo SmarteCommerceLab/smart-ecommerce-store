@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.13
+Stable tag: 0.2.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,10 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.2.14 =
+* Align the Store shell, navigation, KPI cards and error recovery with Smart Admin Design System 2.4.
+* Keep the WordPress admin color scheme as the product header color.
 
 = 0.2.13 =
 * Ripristina gli Install ID Freemius obsoleti dopo l'installazione Premium e offre un'azione manuale nello Store.

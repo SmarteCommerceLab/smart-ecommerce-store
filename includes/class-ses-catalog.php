@@ -67,11 +67,14 @@ final class SES_Catalog {
 			$visibility = sanitize_key((string) ($item['visibility'] ?? 'internal'));
 			if (!in_array($visibility, array('public', 'commercial'), true)) { continue; }
 			$channel = sanitize_key((string) ($item['channel'] ?? ''));
-			if (!in_array($channel, array('wordpress_org', 'freemius'), true)) { continue; }
+			if (!in_array($channel, array('wordpress_org', 'repository', 'freemius'), true)) { continue; }
 			$slug = sanitize_key((string) ($item['slug'] ?? ''));
 			if (!$slug) { continue; }
 			$checkout_url = esc_url_raw((string) ($item['checkout_url'] ?? ''));
 			if ('freemius' === $channel && !self::trusted_checkout_url($checkout_url)) { continue; }
+			$download_url = esc_url_raw((string) ($item['download_url'] ?? ''));
+			$sha256 = strtolower(sanitize_text_field((string) ($item['sha256'] ?? '')));
+			if ('repository' === $channel && (!self::trusted_repository_url($download_url) || !preg_match('/^[a-f0-9]{64}$/', $sha256))) { continue; }
 			$products[$slug] = array(
 				'slug' => $slug,
 				'name' => sanitize_text_field((string) ($item['name'] ?? $slug)),
@@ -81,6 +84,8 @@ final class SES_Catalog {
 				'channel' => $channel,
 				'wordpress_org_slug' => sanitize_key((string) ($item['wordpress_org_slug'] ?? $slug)),
 				'checkout_url' => $checkout_url,
+				'download_url' => 'repository' === $channel ? $download_url : '',
+				'sha256' => 'repository' === $channel ? $sha256 : '',
 				'homepage' => self::official_product_url((string) ($item['homepage'] ?? '')),
 				'documentation_url' => self::official_product_url((string) ($item['documentation_url'] ?? '')),
 				'icon_url' => self::trusted_asset_url((string) ($item['icon_url'] ?? '')),

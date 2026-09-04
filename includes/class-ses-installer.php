@@ -25,6 +25,8 @@ final class SES_Installer {
 			$result = self::reset_freemius($product);
 		} elseif ('premium_install' === $action) {
 			$result = self::install_premium($product, sanitize_text_field(wp_unslash($_POST['license_key'] ?? '')));
+		} elseif ('repository' === ($product['channel'] ?? '')) {
+			$result = self::install_from_repository($product);
 		} else {
 			$result = self::install_from_wordpress_org($product);
 		}
@@ -48,6 +50,38 @@ final class SES_Installer {
 		}
 		$upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
 		$result = $upgrader->install($api->download_link);
+		wp_clean_plugins_cache(true);
+		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_install_failed', __('Installazione non completata.', 'smart-ecommerce-store')));
+	}
+
+	private static function install_from_repository(array $product) {
+		$download_url = esc_url_raw((string) ($product['download_url'] ?? ''));
+		$expected_sha256 = strtolower(sanitize_text_field((string) ($product['sha256'] ?? '')));
+		if (
+			'https' !== strtolower((string) wp_parse_url($download_url, PHP_URL_SCHEME))
+			|| 'repository.smartecommerce.it' !== strtolower((string) wp_parse_url($download_url, PHP_URL_HOST))
+			|| !preg_match('/^[a-f0-9]{64}$/', $expected_sha256)
+		) {
+			return new WP_Error('ses_repository_package_invalid', __('Il pacchetto del repository non è attendibile.', 'smart-ecommerce-store'));
+		}
+		$tmp = wp_tempnam($product['slug'] . '.zip');
+		if (!$tmp) { return new WP_Error('ses_temp_failed', __('Impossibile preparare il download.', 'smart-ecommerce-store')); }
+		$response = wp_remote_get($download_url, array('timeout' => 180, 'sslverify' => true, 'stream' => true, 'filename' => $tmp));
+		if (is_wp_error($response)) { @unlink($tmp); return $response; }
+		if (200 !== (int) wp_remote_retrieve_response_code($response)) {
+			@unlink($tmp);
+			return new WP_Error('ses_repository_download_failed', __('Il pacchetto non è disponibile nel repository.', 'smart-ecommerce-store'));
+		}
+		$actual_sha256 = hash_file('sha256', $tmp);
+		if (!is_string($actual_sha256) || !hash_equals($expected_sha256, strtolower($actual_sha256))) {
+			@unlink($tmp);
+			return new WP_Error('ses_repository_checksum_failed', __('La verifica di integrità del pacchetto non è riuscita.', 'smart-ecommerce-store'));
+		}
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		$upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
+		$result = $upgrader->install($tmp);
+		@unlink($tmp);
 		wp_clean_plugins_cache(true);
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_install_failed', __('Installazione non completata.', 'smart-ecommerce-store')));
 	}

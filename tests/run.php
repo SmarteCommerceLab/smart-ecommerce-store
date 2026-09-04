@@ -28,7 +28,7 @@ $updater = file_get_contents($root . '/includes/class-ses-updater.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
-	"array('wordpress_org', 'freemius')" => 'public channel allow-list',
+	"array('wordpress_org', 'repository', 'freemius')" => 'public channel allow-list',
 	"checkout.freemius.com" => 'trusted checkout host',
 	"repository.smartecommerce.it" => 'trusted catalog host',
 	"official_product_url" => 'official Smart eCommerce product links',
@@ -61,6 +61,10 @@ foreach (array(
 }
 
 foreach (array(
+	'install_from_repository' => 'repository package installation',
+	"hash_file('sha256'" => 'repository package checksum',
+	'hash_equals' => 'constant-time checksum comparison',
+	'ses_repository_checksum_failed' => 'repository checksum rejection',
 	'SES_PREMIUM_INSTALL_URL' => 'server-side premium endpoint',
 	"'stream' => true" => 'streamed premium download',
 	"'sslverify' => true" => 'TLS verification',

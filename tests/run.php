@@ -23,7 +23,8 @@ $main = file_get_contents($root . '/smart-ecommerce-store.php');
 $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
-	"array('wordpress_org', 'freemius')" => 'public channel allow-list',
+	"array('repository', 'wordpress_org', 'freemius')" => 'public channel allow-list',
+	"array('plugin', 'theme')" => 'product type allow-list',
 	"checkout.freemius.com" => 'trusted checkout host',
 	"repository.smartecommerce.it" => 'trusted catalog host',
 );
@@ -52,6 +53,14 @@ foreach (array(
 	if (false === strpos($installer, $needle) && false === strpos(file_get_contents($root . '/smart-ecommerce-store.php'), $needle)) {
 		fwrite(STDERR, "Missing assertion: {$label}\n"); exit(1);
 	}
+}
+
+foreach (array('Theme_Upgrader', 'switch_theme', 'download_url', 'sha256') as $needle) {
+	if (false === strpos($installer, $needle)) { fwrite(STDERR, "Missing theme/repository installer contract: {$needle}\n"); exit(1); }
+}
+
+foreach (array("'plugin' => array(__('Plugin'", "'theme' => array(__('Temi'") as $needle) {
+	if (false === strpos($admin, $needle)) { fwrite(STDERR, "Missing catalog section: {$needle}\n"); exit(1); }
 }
 
 echo "Smart eCommerce Store checks passed.\n";

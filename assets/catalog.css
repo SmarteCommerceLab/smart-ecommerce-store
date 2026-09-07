@@ -1,0 +1,36 @@
+.ses-products-heading {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 28px;
+	padding-bottom: 12px;
+	border-bottom: 2px solid var(--smart-line);
+}
+
+.ses-products-heading > .dashicons {
+	width: 28px;
+	height: 28px;
+	color: var(--smart-accent);
+	font-size: 28px;
+}
+
+.ses-products-heading h2,
+.ses-products-heading p {
+	margin: 0;
+}
+
+.ses-products-heading p {
+	margin-top: 3px;
+	color: var(--smart-muted);
+}
+
+.ses-products-heading > strong {
+	margin-left: auto;
+	font-size: 18px;
+}
+
+.ses-empty-section {
+	padding: 18px;
+	background: var(--smart-surface);
+	color: var(--smart-muted);
+}

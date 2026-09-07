@@ -1,20 +1,20 @@
 === Smart eCommerce Store ===
 Contributors: deradrea
-Tags: plugins, store, ecommerce, installer, catalog
+Tags: plugins, themes, store, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A curated catalog for discovering Smart eCommerce plugins published on WordPress.org and Freemius.
+A curated catalog for discovering Smart eCommerce plugins and themes distributed through the Smart repository, WordPress.org and Freemius.
 
 == Description ==
 
 Smart eCommerce Store presents only products explicitly approved for public distribution.
 
-Free plugins are installed through the official WordPress.org plugin service. Premium purchase buttons open the Freemius checkout. Internal, development and retired products are never displayed.
+Free plugins and themes can be installed from the signed Smart eCommerce repository or WordPress.org. Premium purchase buttons open the Freemius checkout. Internal, development and retired products are never displayed.
 
 = External services =
 
@@ -41,6 +41,12 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.3.0 =
+* Separate the catalog into Plugin and Theme sections.
+* Add signed repository packages with mandatory SHA-256 validation.
+* Add theme inventory, installation, update and activation.
+* Add the System diagnostics and support report page.
 
 = 0.2.0 =
 * Add licensed Premium verification and guided installation through the protected Smart eCommerce endpoint.

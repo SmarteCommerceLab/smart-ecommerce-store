@@ -34,6 +34,15 @@ final class SES_Admin {
 				'icon' => 'dashicons-yes-alt',
 				'description' => __('Installa, attiva e controlla i prodotti già acquistati o disponibili.', 'smart-ecommerce-store'),
 			),
+			array(
+				'slug' => 'ses-system',
+				'page_title' => __('Sistema', 'smart-ecommerce-store'),
+				'menu_title' => __('Sistema', 'smart-ecommerce-store'),
+				'capability' => 'install_plugins',
+				'callback' => array(__CLASS__, 'render_system'),
+				'icon' => 'dashicons-shield',
+				'description' => __('Catalogo, runtime e diagnostica tecnica.', 'smart-ecommerce-store'),
+			),
 		);
 	}
 
@@ -55,6 +64,10 @@ final class SES_Admin {
 		if (false === strpos((string) $hook, 'smart-ecommerce-store') && false === strpos((string) $hook, 'ses-')) { return; }
 		wp_enqueue_style('dashicons');
 		wp_enqueue_style('ses-admin', SES_URL . 'assets/admin.css', array('dashicons'), SES_VERSION);
+		wp_enqueue_style('ses-catalog', SES_URL . 'assets/catalog.css', array('ses-admin'), SES_VERSION);
+		if (false !== strpos((string) $hook, 'ses-system')) {
+			wp_enqueue_style('ses-system', SES_URL . 'assets/system.css', array('ses-admin'), SES_VERSION);
+		}
 	}
 
 	public static function render_dashboard() {
@@ -67,6 +80,10 @@ final class SES_Admin {
 
 	public static function render_my_products() {
 		self::template(__('I miei prodotti', 'smart-ecommerce-store'), __('Azioni disponibili per i prodotti installati o già acquistati.', 'smart-ecommerce-store'), array(__CLASS__, 'my_products_content'));
+	}
+
+	public static function render_system() {
+		self::template(__('Sistema', 'smart-ecommerce-store'), __('Controlla catalogo, runtime e informazioni utili per l assistenza.', 'smart-ecommerce-store'), array(__CLASS__, 'system_content'));
 	}
 
 	private static function template($title, $description, $callback) {
@@ -140,21 +157,55 @@ final class SES_Admin {
 		self::product_list($mine, true);
 	}
 
+	public static function system_content() {
+		$catalog = SES_Catalog::get(false);
+		$catalog_ok = !is_wp_error($catalog);
+		$checks = array(
+			array(__('Catalogo firmato', 'smart-ecommerce-store'), $catalog_ok ? __('Verificato', 'smart-ecommerce-store') : __('Da verificare', 'smart-ecommerce-store'), $catalog_ok),
+			array(__('OpenSSL', 'smart-ecommerce-store'), function_exists('openssl_verify') ? __('Disponibile', 'smart-ecommerce-store') : __('Mancante', 'smart-ecommerce-store'), function_exists('openssl_verify')),
+			array(__('HTTPS', 'smart-ecommerce-store'), is_ssl() ? __('Attivo', 'smart-ecommerce-store') : __('Non attivo', 'smart-ecommerce-store'), is_ssl()),
+			array(__('WordPress cron', 'smart-ecommerce-store'), defined('DISABLE_WP_CRON') && DISABLE_WP_CRON ? __('Disattivato', 'smart-ecommerce-store') : __('Disponibile', 'smart-ecommerce-store'), !(defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)),
+		);
+		$report = array(
+			'product' => SES_PRODUCT_NAME,
+			'version' => SES_VERSION,
+			'wordpress' => get_bloginfo('version'),
+			'php' => PHP_VERSION,
+			'multisite' => is_multisite(),
+			'https' => is_ssl(),
+			'catalog' => array('endpoint' => SES_CATALOG_URL, 'status' => $catalog_ok ? 'ok' : 'error'),
+		);
+		?>
+		<section class="ses-system-hero <?php echo $catalog_ok ? 'is-ok' : 'is-warning'; ?>"><span class="dashicons <?php echo $catalog_ok ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>" aria-hidden="true"></span><div><h2><?php echo esc_html($catalog_ok ? __('Sistema operativo', 'smart-ecommerce-store') : __('Richiede attenzione', 'smart-ecommerce-store')); ?></h2><p><?php echo esc_html($catalog_ok ? __('Il catalogo ufficiale e verificato e lo Store puo operare.', 'smart-ecommerce-store') : $catalog->get_error_message()); ?></p></div></section>
+		<div class="ses-system-list"><?php foreach ($checks as $check) : ?><div><span class="dashicons <?php echo esc_attr($check[2] ? 'dashicons-yes-alt' : 'dashicons-warning'); ?>" aria-hidden="true"></span><span><strong><?php echo esc_html($check[0]); ?></strong><small><?php echo esc_html($check[1]); ?></small></span><b><?php echo esc_html($check[2] ? __('OK', 'smart-ecommerce-store') : __('Verifica', 'smart-ecommerce-store')); ?></b></div><?php endforeach; ?></div>
+		<section class="ses-support-report"><h2><?php esc_html_e('Report tecnico per l assistenza', 'smart-ecommerce-store'); ?></h2><p><?php esc_html_e('Non contiene credenziali, chiavi di licenza o contenuti del sito.', 'smart-ecommerce-store'); ?></p><textarea readonly rows="10"><?php echo esc_textarea(wp_json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></textarea></section>
+		<?php
+	}
+
 	private static function product_list(array $products, $owned) {
 		if (!$products) { echo '<div class="ses-empty"><h2>' . esc_html__('Nessun prodotto disponibile', 'smart-ecommerce-store') . '</h2></div>'; return; }
-		echo '<section class="ses-products"><h2>' . esc_html($owned ? __('Prodotti installati', 'smart-ecommerce-store') : __('Prodotti disponibili', 'smart-ecommerce-store')) . '</h2>';
-		foreach ($products as $product) { self::product_row($product); }
-		echo '</section>';
+		$groups = array(
+			'plugin' => array(__('Plugin', 'smart-ecommerce-store'), 'dashicons-admin-plugins'),
+			'theme' => array(__('Temi', 'smart-ecommerce-store'), 'dashicons-admin-appearance'),
+		);
+		foreach ($groups as $type => $group) {
+			$items = array_filter($products, static function ($product) use ($type) { return $type === ($product['type'] ?? 'plugin'); });
+			echo '<section class="ses-products ses-products-' . esc_attr($type) . '"><header class="ses-products-heading"><span class="dashicons ' . esc_attr($group[1]) . '" aria-hidden="true"></span><div><h2>' . esc_html($group[0]) . '</h2><p>' . esc_html($owned ? __('Prodotti installati in questa categoria.', 'smart-ecommerce-store') : ('theme' === $type ? __('Aspetto e struttura del sito.', 'smart-ecommerce-store') : __('Funzioni e strumenti per WordPress.', 'smart-ecommerce-store'))) . '</p></div><strong>' . esc_html((string) count($items)) . '</strong></header>';
+			if (!$items) { echo '<p class="ses-empty-section">' . esc_html__('Nessun prodotto disponibile in questa sezione.', 'smart-ecommerce-store') . '</p></section>'; continue; }
+			foreach ($items as $product) { self::product_row($product); }
+			echo '</section>';
+		}
 	}
 
 	private static function product_row(array $product) {
 		$status = $product['active'] ? __('Attivo', 'smart-ecommerce-store') : ($product['installed'] ? __('Installato', 'smart-ecommerce-store') : __('Disponibile', 'smart-ecommerce-store'));
 		?>
 		<article class="ses-product-row">
-			<div class="ses-product-main"><?php if ($product['icon_url']) : ?><img src="<?php echo esc_url($product['icon_url']); ?>" alt="" width="56" height="56"><?php else : ?><span class="dashicons dashicons-admin-plugins"></span><?php endif; ?><div><div class="ses-product-title"><h3><?php echo esc_html($product['name']); ?></h3><span class="ses-badge"><?php echo esc_html($status); ?></span><span class="ses-edition"><?php echo 'freemius' === $product['channel'] ? esc_html__('Premium', 'smart-ecommerce-store') : esc_html__('Free', 'smart-ecommerce-store'); ?></span></div><p><?php echo wp_kses_post($product['description']); ?></p><small><?php echo esc_html(sprintf(__('Versione %s', 'smart-ecommerce-store'), $product['version'] ?: '—')); ?></small></div></div>
+			<div class="ses-product-main"><?php if ($product['icon_url']) : ?><img src="<?php echo esc_url($product['icon_url']); ?>" alt="" width="56" height="56"><?php else : ?><span class="dashicons <?php echo esc_attr('theme' === ($product['type'] ?? 'plugin') ? 'dashicons-admin-appearance' : 'dashicons-admin-plugins'); ?>"></span><?php endif; ?><div><div class="ses-product-title"><h3><?php echo esc_html($product['name']); ?></h3><span class="ses-badge"><?php echo esc_html($status); ?></span><span class="ses-edition"><?php echo 'freemius' === $product['channel'] ? esc_html__('Premium', 'smart-ecommerce-store') : esc_html__('Free', 'smart-ecommerce-store'); ?></span></div><p><?php echo wp_kses_post($product['description']); ?></p><small><?php echo esc_html(sprintf(__('Versione %s', 'smart-ecommerce-store'), $product['version'] ?: '—')); ?></small></div></div>
 			<div class="ses-product-actions">
 				<?php if ('freemius' === $product['channel'] && !$product['installed']) : self::premium_form($product); ?><a class="button" href="<?php echo esc_url($product['checkout_url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Acquista Premium', 'smart-ecommerce-store'); ?></a>
-				<?php elseif (!$product['installed']) : self::action_form($product, 'install', __('Installa Free', 'smart-ecommerce-store')); ?>
+				<?php elseif (!$product['installed']) : self::action_form($product, 'install', 'theme' === ($product['type'] ?? 'plugin') ? __('Installa tema', 'smart-ecommerce-store') : __('Installa Free', 'smart-ecommerce-store')); ?>
+				<?php elseif (!empty($product['update_available'])) : self::action_form($product, 'update', __('Aggiorna', 'smart-ecommerce-store')); ?>
 				<?php elseif (!$product['active']) : self::action_form($product, 'activate', __('Attiva', 'smart-ecommerce-store')); ?>
 				<?php else : ?><span class="ses-ready"><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e('Pronto all’uso', 'smart-ecommerce-store'); ?></span><?php endif; ?>
 				<?php if ($product['homepage']) : ?><a class="button button-link" href="<?php echo esc_url($product['homepage']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Dettagli', 'smart-ecommerce-store'); ?></a><?php endif; ?>

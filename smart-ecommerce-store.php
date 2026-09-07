@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Smart eCommerce Store
  * Plugin URI: https://smartecommerce.it/smart-ecommerce-store/
- * Description: Catalogo verificato dei plugin Smart eCommerce disponibili dal repository, WordPress.org e Freemius.
- * Version: 0.2.16
+ * Description: Catalogo verificato di plugin e temi Smart eCommerce distribuiti dal repository, WordPress.org e Freemius.
+ * Version: 0.3.0
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Smart eCommerce
@@ -16,7 +16,7 @@
 
 if (!defined('ABSPATH')) { exit; }
 
-define('SES_VERSION', '0.2.16');
+define('SES_VERSION', '0.3.0');
 define('SES_FILE', __FILE__);
 define('SES_DIR', plugin_dir_path(__FILE__));
 define('SES_URL', plugin_dir_url(__FILE__));

@@ -4,7 +4,7 @@ Tags: plugins, store, ecommerce, installer, catalog
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.16
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,11 @@ No. Products must be explicitly marked public or commercial in the signed catalo
 No. A Premium package is returned only after Freemius authorizes the submitted license for the current site.
 
 == Changelog ==
+
+= 0.3.0 =
+* Catalogo separato nelle sezioni Plugin e Temi.
+* Inventario, installazione, aggiornamento e attivazione dei temi.
+* Pacchetti verificati dal repository Smart eCommerce.
 
 = 0.2.16 =
 * Installa i prodotti Free direttamente dal repository firmato quando non sono ancora pubblicati su WordPress.org.

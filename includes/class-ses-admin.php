@@ -36,6 +36,12 @@ final class SES_Admin {
 				'icon' => 'dashicons-yes-alt',
 				'description' => __('Installa, attiva e controlla i prodotti già acquistati o disponibili.', 'smart-ecommerce-store'),
 			),
+			array(
+				'slug' => 'ses-support', 'page_title' => __('Assistenza', 'smart-ecommerce-store'),
+				'menu_title' => __('Assistenza', 'smart-ecommerce-store'), 'capability' => 'install_plugins',
+				'callback' => array(__CLASS__, 'render_support'), 'icon' => 'dashicons-sos',
+				'description' => __('Guide, diagnostica e report tecnico sicuro.', 'smart-ecommerce-store'),
+			),
 		);
 	}
 
@@ -73,18 +79,27 @@ final class SES_Admin {
 		self::template(__('I miei prodotti', 'smart-ecommerce-store'), __('Azioni disponibili per i prodotti installati o già acquistati.', 'smart-ecommerce-store'), array(__CLASS__, 'my_products_content'));
 	}
 
+	public static function render_support() {
+		self::template(__('Assistenza', 'smart-ecommerce-store'), __('Percorso self-service per catalogo, installazione e licenze.', 'smart-ecommerce-store'), array(__CLASS__, 'support_content'));
+	}
+
+	public static function support_content() {
+		$report = wp_json_encode(array('product' => 'Smart eCommerce Store', 'version' => SES_PRODUCT_VERSION, 'wordpress' => get_bloginfo('version'), 'php' => PHP_VERSION, 'locale' => get_locale(), 'multisite' => is_multisite()), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+		?><section class="ses-support"><h2><?php esc_html_e('Sequenza raccomandata', 'smart-ecommerce-store'); ?></h2><ol><li><?php esc_html_e('Aggiorna il catalogo.', 'smart-ecommerce-store'); ?></li><li><?php esc_html_e('Controlla disponibilità, installazione e licenza.', 'smart-ecommerce-store'); ?></li><li><?php esc_html_e('Copia il report tecnico.', 'smart-ecommerce-store'); ?></li><li><?php esc_html_e('Consulta la guida ufficiale.', 'smart-ecommerce-store'); ?></li></ol><p><a class="button button-primary" href="https://kb.smartecommerce.it/prodotti/smart-ecommerce-store/" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Apri la guida', 'smart-ecommerce-store'); ?></a></p><h2><?php esc_html_e('Report tecnico privo di segreti', 'smart-ecommerce-store'); ?></h2><textarea class="large-text code" rows="8" readonly><?php echo esc_textarea($report); ?></textarea><p class="description"><?php esc_html_e('Non include URL, utenti, email, licenze, token o contenuti.', 'smart-ecommerce-store'); ?></p></section><?php
+	}
+
 	private static function template($title, $description, $callback) {
 		if (!current_user_can('install_plugins')) { wp_die(esc_html__('Permessi insufficienti.', 'smart-ecommerce-store')); }
 		$current = sanitize_key(wp_unslash($_GET['page'] ?? self::MENU_SLUG));
 		$scheme = get_user_option('admin_color');
 		global $_wp_admin_css_colors;
-		$header = isset($_wp_admin_css_colors[$scheme]->colors[0]) ? $_wp_admin_css_colors[$scheme]->colors[0] : '#1d2327';
+		$header = isset($_wp_admin_css_colors[$scheme]->colors[1]) ? $_wp_admin_css_colors[$scheme]->colors[1] : '#2c3338';
 		$pages = array_merge(array(array(
 			'slug' => self::MENU_SLUG, 'menu_title' => __('Store', 'smart-ecommerce-store'),
 			'icon' => 'dashicons-store', 'description' => __('Percorso di acquisto guidato.', 'smart-ecommerce-store'),
 		)), self::get_subpages());
 		?>
-		<div class="wrap smart-admin-wrap" style="--smart-header:<?php echo esc_attr(sanitize_hex_color($header) ?: '#1d2327'); ?>">
+		<div class="wrap smart-admin-wrap" style="--smart-header:<?php echo esc_attr(sanitize_hex_color($header) ?: '#2c3338'); ?>">
 			<header class="smart-admin-header">
 				<div class="smart-admin-header-brand"><span class="smart-admin-logo">Se</span><div><strong><?php echo esc_html(SES_PRODUCT_NAME); ?></strong><small><?php esc_html_e('Catalogo ufficiale Smart eCommerce', 'smart-ecommerce-store'); ?></small></div></div>
 				<div class="smart-admin-header-actions"><span>v<?php echo esc_html(SES_PRODUCT_VERSION); ?></span></div>

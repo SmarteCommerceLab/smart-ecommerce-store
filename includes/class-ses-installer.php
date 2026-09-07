@@ -9,7 +9,6 @@ final class SES_Installer {
 	}
 
 	public static function handle() {
-		if (!current_user_can('install_plugins')) { wp_die(esc_html__('Permessi insufficienti.', 'smart-ecommerce-store'), 403); }
 		$slug = sanitize_key(wp_unslash($_POST['slug'] ?? ''));
 		$action = sanitize_key(wp_unslash($_POST['product_action'] ?? ''));
 		check_admin_referer('ses_product_' . $slug);
@@ -19,6 +18,9 @@ final class SES_Installer {
 			self::redirect('error', is_wp_error($catalog) ? $catalog->get_error_message() : __('Prodotto non disponibile.', 'smart-ecommerce-store'));
 		}
 		$product = $catalog['products'][$slug];
+		$is_theme = 'theme' === ($product['type'] ?? 'plugin');
+		$capability = 'activate' === $action ? ($is_theme ? 'switch_themes' : 'activate_plugins') : ($is_theme ? ('update' === $action ? 'update_themes' : 'install_themes') : ('update' === $action ? 'update_plugins' : 'install_plugins'));
+		if (!current_user_can($capability)) { wp_die(esc_html__('Permessi insufficienti.', 'smart-ecommerce-store'), 403); }
 		if ('activate' === $action) {
 			$result = self::activate($product);
 		} elseif ('reset_freemius' === $action) {
@@ -26,7 +28,7 @@ final class SES_Installer {
 		} elseif ('premium_install' === $action) {
 			$result = self::install_premium($product, sanitize_text_field(wp_unslash($_POST['license_key'] ?? '')));
 		} elseif ('repository' === ($product['channel'] ?? '')) {
-			$result = self::install_from_repository($product);
+			$result = self::install_from_repository($product, 'update' === $action);
 		} else {
 			$result = self::install_from_wordpress_org($product);
 		}
@@ -54,7 +56,7 @@ final class SES_Installer {
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_install_failed', __('Installazione non completata.', 'smart-ecommerce-store')));
 	}
 
-	private static function install_from_repository(array $product) {
+	private static function install_from_repository(array $product, $overwrite = false) {
 		$download_url = esc_url_raw((string) ($product['download_url'] ?? ''));
 		$expected_sha256 = strtolower(sanitize_text_field((string) ($product['sha256'] ?? '')));
 		if (
@@ -79,17 +81,20 @@ final class SES_Installer {
 		}
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		$upgrader = new Plugin_Upgrader(new Automatic_Upgrader_Skin());
-		$result = $upgrader->install($tmp);
+		$is_theme = 'theme' === ($product['type'] ?? 'plugin');
+		$upgrader = $is_theme ? new Theme_Upgrader(new Automatic_Upgrader_Skin()) : new Plugin_Upgrader(new Automatic_Upgrader_Skin());
+		$result = $upgrader->install($tmp, array('overwrite_package' => $overwrite));
 		@unlink($tmp);
-		wp_clean_plugins_cache(true);
+		if ($is_theme) { wp_clean_themes_cache(true); } else { wp_clean_plugins_cache(true); }
 		return true === $result ? true : (is_wp_error($result) ? $result : new WP_Error('ses_install_failed', __('Installazione non completata.', 'smart-ecommerce-store')));
 	}
 
 	private static function activate(array $product) {
 		$products = SES_Products::enrich(array('products' => array($product['slug'] => $product)));
-		$file = (string) ($products[$product['slug']]['plugin_file'] ?? '');
+		$is_theme = 'theme' === ($product['type'] ?? 'plugin');
+		$file = (string) ($products[$product['slug']][$is_theme ? 'theme_stylesheet' : 'plugin_file'] ?? '');
 		if (!$file) { return new WP_Error('ses_not_installed', __('Installa prima il plugin.', 'smart-ecommerce-store')); }
+		if ($is_theme) { switch_theme($file); return true; }
 		$result = activate_plugin($file, '', is_multisite() && is_network_admin(), false);
 		if (!is_wp_error($result) && self::has_pending_reset($product['slug'])) {
 			$reset = self::reset_freemius($product);

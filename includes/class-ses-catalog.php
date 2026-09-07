@@ -63,7 +63,9 @@ final class SES_Catalog {
 	private static function normalize(array $payload) {
 		$products = array();
 		foreach ((array) ($payload['products'] ?? array()) as $item) {
-			if (!is_array($item) || 'plugin' !== ($item['type'] ?? 'plugin')) { continue; }
+			if (!is_array($item)) { continue; }
+			$type = sanitize_key((string) ($item['type'] ?? 'plugin'));
+			if (!in_array($type, array('plugin', 'theme'), true)) { continue; }
 			$visibility = sanitize_key((string) ($item['visibility'] ?? 'internal'));
 			if (!in_array($visibility, array('public', 'commercial'), true)) { continue; }
 			$channel = sanitize_key((string) ($item['channel'] ?? ''));
@@ -77,6 +79,7 @@ final class SES_Catalog {
 			if ('repository' === $channel && (!self::trusted_repository_url($download_url) || !preg_match('/^[a-f0-9]{64}$/', $sha256))) { continue; }
 			$products[$slug] = array(
 				'slug' => $slug,
+				'type' => $type,
 				'name' => sanitize_text_field((string) ($item['name'] ?? $slug)),
 				'description' => wp_kses_post((string) ($item['description'] ?? '')),
 				'version' => sanitize_text_field((string) ($item['version'] ?? '')),

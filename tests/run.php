@@ -29,6 +29,7 @@ $assertions = array(
 	"visibility'] ?? 'internal'" => 'missing visibility is private',
 	"array('public', 'commercial')" => 'public visibility allow-list',
 	"array('wordpress_org', 'repository', 'freemius')" => 'public channel allow-list',
+	"array('plugin', 'theme')" => 'product type allow-list',
 	"checkout.freemius.com" => 'trusted checkout host',
 	"repository.smartecommerce.it" => 'trusted catalog host',
 	"official_product_url" => 'official Smart eCommerce product links',
@@ -62,6 +63,8 @@ foreach (array(
 
 foreach (array(
 	'install_from_repository' => 'repository package installation',
+	'Theme_Upgrader' => 'theme package installation',
+	'switch_theme' => 'theme activation',
 	"hash_file('sha256'" => 'repository package checksum',
 	'hash_equals' => 'constant-time checksum comparison',
 	'ses_repository_checksum_failed' => 'repository checksum rejection',

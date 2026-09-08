@@ -164,13 +164,22 @@ final class SES_Admin {
 	private static function product_list(array $products, $owned) {
 		if (!$products) { echo '<div class="ses-empty"><h2>' . esc_html__('Nessun prodotto disponibile', 'smart-ecommerce-store') . '</h2></div>'; return; }
 		$groups = array('plugin' => array(__('Plugin', 'smart-ecommerce-store'), 'dashicons-admin-plugins'), 'theme' => array(__('Temi', 'smart-ecommerce-store'), 'dashicons-admin-appearance'));
+		$active_type = isset($_GET['product_type']) ? sanitize_key((string) wp_unslash($_GET['product_type'])) : 'plugin';
+		if (!isset($groups[$active_type])) { $active_type = 'plugin'; }
+		$page = $owned ? 'ses-my-products' : self::MENU_SLUG;
+		echo '<nav class="smart-catalog-tabs" role="tablist" aria-label="' . esc_attr__('Tipologia di prodotto', 'smart-ecommerce-store') . '">';
 		foreach ($groups as $type => $group) {
-			$items = array_filter($products, static function ($product) use ($type) { return $type === ($product['type'] ?? 'plugin'); });
-			echo '<section class="ses-products"><header class="ses-products-heading"><span class="dashicons ' . esc_attr($group[1]) . '" aria-hidden="true"></span><div><h2>' . esc_html($group[0]) . '</h2><p>' . esc_html($owned ? __('Prodotti installati in questa categoria.', 'smart-ecommerce-store') : ('theme' === $type ? __('Aspetto e struttura del sito.', 'smart-ecommerce-store') : __('Funzioni e strumenti per WordPress.', 'smart-ecommerce-store'))) . '</p></div><strong>' . esc_html((string) count($items)) . '</strong></header>';
-			if (!$items) { echo '<p class="ses-empty-section">' . esc_html__('Nessun prodotto disponibile in questa sezione.', 'smart-ecommerce-store') . '</p></section>'; continue; }
-			foreach ($items as $product) { self::product_row($product); }
-			echo '</section>';
+			$count = count(array_filter($products, static function ($product) use ($type) { return $type === ($product['type'] ?? 'plugin'); }));
+			$url = add_query_arg(array('page' => $page, 'product_type' => $type), admin_url('admin.php'));
+			echo '<a class="smart-catalog-tab' . ($active_type === $type ? ' is-active' : '') . '" role="tab" aria-selected="' . ($active_type === $type ? 'true' : 'false') . '" href="' . esc_url($url) . '"><span class="dashicons ' . esc_attr($group[1]) . '" aria-hidden="true"></span><span>' . esc_html($group[0]) . '</span><span class="smart-catalog-count">' . esc_html((string) $count) . '</span></a>';
 		}
+		echo '</nav>';
+		$group = $groups[$active_type];
+		$items = array_filter($products, static function ($product) use ($active_type) { return $active_type === ($product['type'] ?? 'plugin'); });
+		echo '<section class="ses-products"><header class="ses-products-heading"><span class="dashicons ' . esc_attr($group[1]) . '" aria-hidden="true"></span><div><h2>' . esc_html($group[0]) . '</h2><p>' . esc_html($owned ? __('Prodotti installati in questa categoria.', 'smart-ecommerce-store') : ('theme' === $active_type ? __('Aspetto e struttura del sito.', 'smart-ecommerce-store') : __('Funzioni e strumenti per WordPress.', 'smart-ecommerce-store'))) . '</p></div><strong>' . esc_html((string) count($items)) . '</strong></header>';
+		if (!$items) { echo '<p class="ses-empty-section">' . esc_html__('Nessun prodotto disponibile in questa sezione.', 'smart-ecommerce-store') . '</p></section>'; return; }
+		foreach ($items as $product) { self::product_row($product); }
+		echo '</section>';
 	}
 
 	private static function product_row(array $product) {

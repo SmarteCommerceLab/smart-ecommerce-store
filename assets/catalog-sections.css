@@ -1,4 +1,9 @@
-.ses-products-heading { display: flex; align-items: center; gap: 12px; margin-top: 28px; padding-bottom: 12px; border-bottom: 2px solid var(--smart-line); }
+.smart-catalog-tabs { display: flex; gap: 4px; margin: 24px 0 0; overflow-x: auto; border-bottom: 1px solid var(--smart-line); }
+.smart-catalog-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 16px; border-bottom: 2px solid transparent; color: var(--smart-muted); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.smart-catalog-tab:hover, .smart-catalog-tab:focus { color: var(--smart-accent); }
+.smart-catalog-tab.is-active { border-bottom-color: var(--smart-accent); color: var(--smart-accent); }
+.smart-catalog-count { min-width: 20px; padding: 1px 6px; border: 1px solid var(--smart-line); border-radius: 8px; color: inherit; font-size: 11px; line-height: 16px; text-align: center; }
+.ses-products-heading { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--smart-line); }
 .ses-products-heading > .dashicons { width: 28px; height: 28px; color: var(--smart-accent); font-size: 28px; }
 .ses-products-heading h2, .ses-products-heading p { margin: 0; }
 .ses-products-heading p { margin-top: 3px; color: var(--smart-muted); }
